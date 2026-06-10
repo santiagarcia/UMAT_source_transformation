@@ -1,0 +1,26 @@
+{
+  "name": "my_new_umat",
+  "source": "/absolute/path/to/your_umat.for",
+  "jacobian": {
+    "seed": "DSTRAN",
+    "output": "STRESS",
+    "target": "DDSDDE"
+  },
+  "description": "Edit this template for your own UMAT.",
+  "promote": [
+    "STRESS"
+  ],
+  "constant": [
+    "PROPS",
+    "STATEV"
+  ],
+  "real": [
+    "DDSDDE",
+    "NTENS"
+  ],
+  "replace": [
+    "START-END"
+  ],
+  "ntens": 6,
+  "order": 1
+}

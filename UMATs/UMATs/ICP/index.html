@@ -1,0 +1,601 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns:st1="urn:schemas-microsoft-com:office:smarttags"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 10">
+<meta name=Originator content="Microsoft Word 10">
+<link rel=File-List href="index_files/filelist.xml">
+<title>Appendix B: Fortran coding available via the OUP website</title>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="PlaceType"/>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="PlaceName"/>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="place"/>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="PersonName"/>
+<!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if !mso]><object
+ classid="clsid:38481807-CA0E-42D2-BF39-B33AF135CC4D" id=ieooui></object>
+<style>
+st1\:*{behavior:url(#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+h1
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	font-size:16.0pt;
+	font-family:Arial;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	mso-header-margin:35.4pt;
+	mso-footer-margin:35.4pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]-->
+</head>
+
+<body lang=EN-GB link=blue vlink=purple style='tab-interval:36.0pt'>
+
+<div class=Section1>
+
+<h1><span style='font-size:24.0pt;font-family:"Times New Roman"'>Introduction
+to Computational Plasticity</span><span style='font-family:"Times New Roman"'><br>
+</span><st1:PersonName><span style='font-family:"Times New Roman";font-weight:
+ normal'>Fionn Dunne</span></st1:PersonName><span style='font-family:"Times New Roman";
+font-weight:normal'> &nbsp;and &nbsp;</span><st1:place><st1:PersonName><st1:PlaceName><span
+   style='font-family:"Times New Roman";font-weight:normal'>Nik</span></st1:PlaceName><span
+  style='font-family:"Times New Roman";font-weight:normal'> </span><st1:PlaceName><span
+   style='font-family:"Times New Roman";font-weight:normal'>Petrinic</span></st1:PlaceName></st1:PersonName><span
+ style='font-family:"Times New Roman";font-weight:normal'><br>
+ </span><st1:PlaceName><span style='font-size:14.0pt;font-family:"Times New Roman";
+  font-weight:normal'>Oxford</span></st1:PlaceName><span style='font-size:14.0pt;
+ font-family:"Times New Roman";font-weight:normal'> </span><st1:PlaceType><span
+  style='font-size:14.0pt;font-family:"Times New Roman";font-weight:normal'>University</span></st1:PlaceType></st1:place><span
+style='font-size:14.0pt;font-family:"Times New Roman";font-weight:normal'> Press,
+2005, ISBN 0 19 856826 6 (Hbk)</span></h1>
+
+<h1><span style='font-family:"Times New Roman"'>&nbsp;</span></h1>
+
+<h1><span style='font-family:"Times New Roman"'>Appendix B:&nbsp;&nbsp; Fortran
+coding available via the OUP website</span></h1>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>Download archive in ZIP format: <a href="code.zip">code.zip</a></p>
+
+<p class=MsoNormal>Download archive in GZIP/TAR format: <a href="code.tar.gz">code.tar.gz</a></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>After downloading and uncompressing the archive the
+following directories/files should be available (selecting table entries allows
+for downloading of individual files).</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt'>Directory /
+File&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Description</span></b></p>
+
+<p class=MsoNormal><b>elasticity</b></p>
+
+<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0
+ style='margin-left:20.9pt;border-collapse:collapse;mso-padding-alt:0cm 0cm 0cm 0cm'>
+ <tr style='mso-yfti-irow:0'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><a href="elasticity/elastic.f">elastic.f</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal>UMAT&nbsp;for plane strain and axial symmetry for elastic
+  behaviour using ABAQUS&nbsp;stress and strain quantities.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><a href="elasticity/elas_axidisp.inp">elas_axidisp.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal>ABAQUS&nbsp;input file for single axisymmetric element
+  under uniaxial&nbsp;displacement controlled loading, requiring
+  UMAT&nbsp;elastic.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2;mso-yfti-lastrow:yes'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><a href="elasticity/elas_axiforce.inp">elas_axiforce.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal>ABAQUS&nbsp;input file for single axisymmetric element
+  under uniaxial&nbsp;force controlled loading, requiring UMAT&nbsp;elastic.f</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='margin-right:-2.9pt'><b>plasticity_exp</b></p>
+
+<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0
+ style='margin-left:20.9pt;border-collapse:collapse;mso-padding-alt:0cm 0cm 0cm 0cm'>
+ <tr style='mso-yfti-irow:0'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_exp/code_exp.f">code_exp.f</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>UMAT&nbsp;for plane strain and
+  axial symmetry for elastic, linear strain hardening&nbsp;plastic behaviour
+  using explicit integration with continuum Jacobian, using ABAQUS stress and
+  strain quantities. Suitable for large deformations </p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_exp/plas_exp_axidisp_aba.inp">plas_exp_axidisp_aba.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;displacement controlled
+  loading, using ABAQUS *PLASTIC</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_exp/plas_exp_axiforce_aba.inp">plas_exp_axiforce_aba_inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;force controlled loading,
+  using ABAQUS *PLASTIC</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_exp/plas_exp_axidisp.inp">plas_exp_axidisp.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;displacement controlled
+  loading, requiring UMAT&nbsp;code_exp.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_exp/plas_exp_axiforce.inp">plas_exp_axiforce.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;force controlled loading,
+  requiring UMAT&nbsp;code_exp.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_exp/beam_mesh.inp">beam_mesh.inp</a><o:p></o:p></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>&nbsp;<o:p></o:p></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_exp/plas_exp_beam_aba.inp">plas_exp_beam_aba.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>Four point bend loading using
+  ABAQUS*PLASTIC, requiring mesh file beam_mesh.inp </p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7;mso-yfti-lastrow:yes'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_exp/plas_exp_beam.inp">plas_exp_beam.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>Four point bend loading
+  requiring UMAT code_exp.f, requiring mesh file beam_mesh.inp</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='margin-right:-2.9pt'><b>plasticity_imp</b></p>
+
+<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0
+ style='margin-left:20.9pt;border-collapse:collapse;mso-padding-alt:0cm 0cm 0cm 0cm'>
+ <tr style='mso-yfti-irow:0'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_imp/code_imp.f">code_imp.f</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>UMAT&nbsp;for plane strain and
+  axial symmetry for elastic, linear strain hardening&nbsp;plastic behaviour
+  using implicit integration with consistent Jacobian, using ABAQUS&nbsp;stress
+  and strain quantities. Suitable for large deformations.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_imp/plas_imp_axidisp_aba.inp">plas_imp_axidisp_aba.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;displacement controlled
+  loading, using ABAQUS *PLASTIC</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_imp/plas_imp_axiforce_aba.inp">plas_imp_axiforce_aba_inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;force controlled loading,
+  using ABAQUS *PLASTIC</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_imp/plas_imp_axidisp.inp">plas_imp_axidisp.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;displacement controlled
+  loading, requiring UMAT&nbsp;code_imp.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_imp/plas_imp_axiforce.inp">plas_imp_axiforce.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;force controlled loading,
+  requiring UMAT&nbsp;code_imp.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_imp/beam_mesh.inp">beam_mesh.inp</a><o:p></o:p></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>&nbsp;<o:p></o:p></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_imp/plas_imp_beam_aba.inp">plas_imp_beam_aba.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>Four point bend loading using
+  ABAQUS&nbsp;*PLASTIC, requiring mesh file beam_mesh.inp </p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7;mso-yfti-lastrow:yes'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="plasticity_imp/plas_imp_beam.inp">plas_imp_beam.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>Four point bend loading requiring
+  UMAT&nbsp;code_imp.f, requiring mesh file beam_mesh.inp</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='margin-right:-2.9pt'><b>spin</b></p>
+
+<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0
+ style='margin-left:20.9pt;border-collapse:collapse;mso-padding-alt:0cm 0cm 0cm 0cm'>
+ <tr style='mso-yfti-irow:0'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a href="spin/spin_elastic.f">spin_elastic.f</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>UMAT&nbsp;for 3D, plane strain
+  and axial symmetry for elastic behaviour using ABAQUS&nbsp;stress and strain
+  quantities</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a href="spin/spin_elas_def.f">spin_elas_def.f</a>&nbsp;
+  </p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>UMAT&nbsp;for 3D, plane strain
+  and axial symmetry for elastic behaviour using the deformation gradient</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a href="spin/spin_axidisp.inp">spin_axidisp.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;displacement controlled
+  loading, requiring UMAT&nbsp;spin_elas_def.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="spin/spin_axiforce.inp">spin_axiforce.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;force controlled loading,
+  requiring UMAT&nbsp;spin_elas_def.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a href="spin/spin_shear.inp">spin_shear.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for a
+  single plane strain element under simple shear, requiring
+  UMAT&nbsp;spin_elas_def.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5;mso-yfti-lastrow:yes'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="spin/spin_shear_aba.inp">spin_shear_aba.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for a
+  single plane strain element under simple shear, using ABAQUS *ELASTIC</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='margin-right:-2.9pt'><b>visco</b></p>
+
+<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0
+ style='margin-left:20.9pt;border-collapse:collapse;mso-padding-alt:0cm 0cm 0cm 0cm'>
+ <tr style='mso-yfti-irow:0'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a href="visco/uni_visco_imp.f">uni_visco_imp.f
+  </a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>Closed form fortran
+  implicit&nbsp;solution for uniaxial&nbsp;elasto- viscoplasticity</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a href="visco/uni_visco_exp.f">uni_visco_exp.f</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>Closed form fortran explicit
+  solution for uniaxial&nbsp;elasto- viscoplasticity</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a href="visco/visco_imp.f">visco_imp.f</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>UMAT&nbsp;for plane strain and
+  axial symmetry for elastic, linear strain hardening&nbsp;viscoplastic
+  behaviour using implicit&nbsp;integration using the initial tangent
+  stiffness, using ABAQUS&nbsp;stress and strain quantities. Suitable for large
+  deformations.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a href="visco/visco_beam.f">visco_beam.f</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>&nbsp;</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="visco/visco_imp_axidisp.inp">visco_imp_axidisp.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;displacement controlled
+  loading, requiring UMAT&nbsp;visco_imp.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="visco/visco_imp_axiforce.inp">visco_imp_axiforce.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>ABAQUS&nbsp;input file for
+  single axisymmetric element under uniaxial&nbsp;force controlled loading,
+  requiring UMAT&nbsp;visco_imp.f</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a href="visco/beam_mesh.inp">beam_mesh.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>&nbsp;</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7;mso-yfti-lastrow:yes'>
+  <td width=188 valign=top style='width:141.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'><a
+  href="visco/visco_imp_beam.inp">visco_imp_beam.inp</a></p>
+  </td>
+  <td width=380 valign=top style='width:284.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='margin-right:-2.9pt'>Four point bend loading
+  requiring UMAT&nbsp;visco_beam.f, requiring mesh file beam_mesh.inp</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='margin-right:-2.9pt'>&nbsp;</p>
+
+</div>
+
+</body>
+
+</html>

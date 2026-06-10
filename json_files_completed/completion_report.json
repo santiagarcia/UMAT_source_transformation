@@ -1,0 +1,194 @@
+{
+  "results": [
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_ECL_TEMP.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": false,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_ECL_TEMP.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 5,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_ECO.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": false,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_ECO.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 1,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_HIN.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_HIN.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 74,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_NKH_1.02.json",
+      "file_io_count": 5,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_NKH_1.02.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 36,
+      "tangent_helper_skip_count": 2
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_PCL.json",
+      "file_io_count": 5,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_PCL.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 24,
+      "tangent_helper_skip_count": 1
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_PCLI.json",
+      "file_io_count": 5,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_PCLI.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 43,
+      "tangent_helper_skip_count": 2
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_PCLI_R.json",
+      "file_io_count": 5,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_PCLI_R.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 43,
+      "tangent_helper_skip_count": 2
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_PCLK.json",
+      "file_io_count": 5,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_PCLK.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 16,
+      "tangent_helper_skip_count": 1
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_PCO.json",
+      "file_io_count": 5,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_PCO.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 41,
+      "tangent_helper_skip_count": 2
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_VPDCL.json",
+      "file_io_count": 5,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_VPDCL.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 29,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_VPDCL_R.json",
+      "file_io_count": 5,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_VPDCL_R.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 58,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "UMAT_VPDCO.json",
+      "file_io_count": 5,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/UMAT_VPDCO.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 57,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "code_exp.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/code_exp.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 18,
+      "tangent_helper_skip_count": 1
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "code_imp.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/code_imp.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 15,
+      "tangent_helper_skip_count": 2
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "elastic.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": true,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/elastic.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 2,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "spin_elas_def.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": false,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/spin_elas_def.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 4,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "spin_elastic.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": false,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/spin_elastic.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 2,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "visco_beam.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": false,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/visco_beam.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 14,
+      "tangent_helper_skip_count": 0
+    },
+    {
+      "completion_issue_count": 0,
+      "config": "visco_imp.json",
+      "file_io_count": 0,
+      "has_ddsdde_output_region": false,
+      "output": "/home/vfn333/OTI_computeflowrule/OTI_UMAT_SOURCE_TRANSFORMATION/json_files_completed/visco_imp.json",
+      "status": "ready_with_auto_json",
+      "stress_region_count": 14,
+      "tangent_helper_skip_count": 0
+    }
+  ]
+}

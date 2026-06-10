@@ -1,0 +1,58 @@
+{
+  "name": "my_new_umat_with_constitutive_jacobians",
+  "source": "/absolute/path/to/your_umat.for",
+  "jacobian": {
+    "seed": "DSTRAN",
+    "output": "STRESS",
+    "target": "DDSDDE"
+  },
+  "description": "Advanced template. Edit all variable names and line numbers.",
+  "promote": [
+    "STRESS"
+  ],
+  "constant": [
+    "PROPS",
+    "STATEV"
+  ],
+  "real": [
+    "DDSDDE",
+    "NTENS"
+  ],
+  "replace": [
+    "START-END"
+  ],
+  "ntens": 6,
+  "order": 1,
+  "validation": {
+    "compare": [
+      "STRESS",
+      "STATEV",
+      "CONVERGENCE"
+    ],
+    "absolute_tolerance": 0.0001
+  },
+  "constitutive_jacobians": [
+    {
+      "id": "fjac_from_oti",
+      "description": "Example advanced constitutive Jacobian contract.",
+      "seed": "G1",
+      "seed_shape": "scalar",
+      "seed_directions": 1,
+      "output": "G1JAC",
+      "output_shape": "scalar",
+      "loop": {
+        "top": 250,
+        "reseed_after": 260
+      },
+      "extract_after": 265,
+      "replace_variable": "G1JAC"
+    }
+  ],
+  "helper_surfaces": [
+    {
+      "helper": "KCONSTITU",
+      "target": "G1JAC",
+      "source": "G1"
+    }
+  ]
+}

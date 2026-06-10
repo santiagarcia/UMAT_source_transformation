@@ -1,0 +1,113 @@
+{
+  "case_name": "UMAT_ECL_TEMP",
+  "description": "Generated from UMAT source analysis. DDSDDE is configured as d STRESS / d DSTRAN; PROPS remain constants.",
+  "jacobian": {
+    "dependent": "STRESS",
+    "independent": "DSTRAN",
+    "target": "DDSDDE"
+  },
+  "otis": {
+    "ntens": 6,
+    "order": 1
+  },
+  "replace": {
+    "ddsdde_block": [
+      "96-104"
+    ]
+  },
+  "source": {
+    "file": "../UMATs/UMATs/ICP/UMAT_ECL_TEMP.for"
+  },
+  "variables": {
+    "constant": [
+      "AAMAX",
+      "C",
+      "COORDS",
+      "CTE",
+      "D",
+      "DEL",
+      "DPRED",
+      "DROT",
+      "DSTRTHER",
+      "DTEMP",
+      "DTHETA",
+      "DTIME",
+      "EBULK3",
+      "EG",
+      "EG2",
+      "EG3",
+      "ELAM",
+      "EMOD",
+      "ENU",
+      "GMOD",
+      "IF",
+      "ONE",
+      "ONENEG",
+      "PREDEF",
+      "PROPS",
+      "SCALAR",
+      "STATEV",
+      "STRAN",
+      "TEMP",
+      "THETA",
+      "THREE",
+      "TIME",
+      "TINY",
+      "TWO",
+      "VV",
+      "Y",
+      "ZERO"
+    ],
+    "promote": [
+      "IFLAG",
+      "IMAX",
+      "STRESS",
+      "SUM"
+    ],
+    "real": [
+      "CELENT",
+      "CMNAME",
+      "DDSDDE",
+      "DDSDDT",
+      "DFGRD0",
+      "DFGRD1",
+      "DRPLDE",
+      "DRPLDT",
+      "I",
+      "II",
+      "J",
+      "K",
+      "K1",
+      "K2",
+      "KINC",
+      "KSPT",
+      "KSTEP",
+      "LAYER",
+      "M",
+      "N",
+      "NC",
+      "NCA",
+      "NCB",
+      "NDI",
+      "NDIM",
+      "NOEL",
+      "NP",
+      "NPROPS",
+      "NPT",
+      "NR",
+      "NRA",
+      "NRB",
+      "NSHR",
+      "NSTATV",
+      "NTENS",
+      "PNEWDT",
+      "RPL",
+      "SCD",
+      "SPD",
+      "SSE"
+    ],
+    "seed": [
+      "DSTRAN"
+    ]
+  }
+}

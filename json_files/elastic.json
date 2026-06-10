@@ -1,0 +1,83 @@
+{
+  "case_name": "elastic",
+  "description": "Generated from UMAT source analysis. DDSDDE is configured as d STRESS / d DSTRAN; PROPS remain constants.",
+  "jacobian": {
+    "dependent": "STRESS",
+    "independent": "DSTRAN",
+    "target": "DDSDDE"
+  },
+  "otis": {
+    "ntens": 4,
+    "order": 1
+  },
+  "replace": {
+    "ddsdde_block": [
+      "83-87"
+    ]
+  },
+  "source": {
+    "file": "../UMATs/UMATs/ICP/elasticity/elastic.f"
+  },
+  "variables": {
+    "constant": [
+      "COORDS",
+      "DDS",
+      "DPRED",
+      "DROT",
+      "DTEMP",
+      "DTIME",
+      "E",
+      "EBULK3",
+      "EG",
+      "EG2",
+      "ELAM",
+      "ONE",
+      "PREDEF",
+      "PROPS",
+      "STATEV",
+      "STRAN",
+      "TEMP",
+      "THREE",
+      "TIME",
+      "TWO",
+      "XNUE"
+    ],
+    "promote": [
+      "DSTRESS",
+      "STRESS",
+      "TRVAL"
+    ],
+    "real": [
+      "CELENT",
+      "CMNAME",
+      "DDSDDE",
+      "DDSDDT",
+      "DFGRD0",
+      "DFGRD1",
+      "DRPLDE",
+      "DRPLDT",
+      "I",
+      "J",
+      "K",
+      "KINC",
+      "KSPT",
+      "KSTEP",
+      "LAYER",
+      "NDI",
+      "NOEL",
+      "NPROPS",
+      "NPT",
+      "NSHR",
+      "NSTATV",
+      "NTENS",
+      "PNEWDT",
+      "RPL",
+      "SCD",
+      "SPD",
+      "SSE"
+    ],
+    "seed": [
+      "DSTRAN"
+    ]
+  }
+}

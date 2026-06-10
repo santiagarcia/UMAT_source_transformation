@@ -1,0 +1,72 @@
+{
+  "constant": [
+    "COORDS",
+    "DDS",
+    "DPRED",
+    "DROT",
+    "DTEMP",
+    "DTIME",
+    "E",
+    "EBULK3",
+    "EG",
+    "EG2",
+    "ELAM",
+    "ONE",
+    "PREDEF",
+    "PROPS",
+    "STATEV",
+    "STRAN",
+    "TEMP",
+    "THREE",
+    "TIME",
+    "TWO",
+    "XNUE"
+  ],
+  "description": "Smallest real example in this repository.",
+  "jacobian": {
+    "output": "STRESS",
+    "seed": "DSTRAN",
+    "target": "DDSDDE"
+  },
+  "name": "elastic",
+  "ntens": 4,
+  "order": 1,
+  "promote": [
+    "DSTRESS",
+    "STRESS",
+    "TRVAL"
+  ],
+  "real": [
+    "CELENT",
+    "CMNAME",
+    "DDSDDE",
+    "DDSDDT",
+    "DFGRD0",
+    "DFGRD1",
+    "DRPLDE",
+    "DRPLDT",
+    "I",
+    "J",
+    "K",
+    "KINC",
+    "KSPT",
+    "KSTEP",
+    "LAYER",
+    "NDI",
+    "NOEL",
+    "NPROPS",
+    "NPT",
+    "NSHR",
+    "NSTATV",
+    "NTENS",
+    "PNEWDT",
+    "RPL",
+    "SCD",
+    "SPD",
+    "SSE"
+  ],
+  "replace": [
+    "83-87"
+  ],
+  "source": "../../UMATs/UMATs/ICP/elasticity/elastic.f"
+}

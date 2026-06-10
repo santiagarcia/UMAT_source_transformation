@@ -1,0 +1,1 @@
+"""Abaqus UMAT interface helpers."""

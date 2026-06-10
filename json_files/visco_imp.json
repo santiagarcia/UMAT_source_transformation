@@ -1,0 +1,113 @@
+{
+  "case_name": "visco_imp",
+  "description": "Generated from UMAT source analysis. DDSDDE is configured as d STRESS / d DSTRAN; PROPS remain constants.",
+  "jacobian": {
+    "dependent": "STRESS",
+    "independent": "DSTRAN",
+    "target": "DDSDDE"
+  },
+  "otis": {
+    "ntens": 4,
+    "order": 1
+  },
+  "replace": {
+    "ddsdde_block": [
+      "67-78"
+    ]
+  },
+  "source": {
+    "file": "../UMATs/UMATs/ICP/visco/visco_imp.f"
+  },
+  "variables": {
+    "constant": [
+      "ALPHA",
+      "BETA",
+      "COORDS",
+      "DM",
+      "DPRED",
+      "DROT",
+      "DTEMP",
+      "DTIME",
+      "E",
+      "EBULK3",
+      "EG",
+      "EG2",
+      "ELAM",
+      "H",
+      "ONE",
+      "PREDEF",
+      "PROPS",
+      "STRAN",
+      "STRRAT",
+      "TEMP",
+      "THREE",
+      "TIME",
+      "TWO",
+      "X",
+      "XK",
+      "XNUE",
+      "YIELD"
+    ],
+    "promote": [
+      "COSH",
+      "DEQPL",
+      "DESTRAN",
+      "DIR",
+      "DPSTRAN",
+      "DSTRESS",
+      "FLOW",
+      "P",
+      "PJ",
+      "PS",
+      "R",
+      "R0",
+      "SIGM",
+      "SINH",
+      "STATEV",
+      "STRESS",
+      "STRESSOLD",
+      "XDP",
+      "XFLOW",
+      "XPHI",
+      "XPHIDP",
+      "XPHIR",
+      "XRES"
+    ],
+    "real": [
+      "CELENT",
+      "CMNAME",
+      "DDSDDE",
+      "DDSDDT",
+      "DFGRD0",
+      "DFGRD1",
+      "DM1",
+      "DM2",
+      "DRPLDE",
+      "DRPLDT",
+      "I",
+      "JDOF",
+      "K",
+      "KINC",
+      "KSPT",
+      "KSTEP",
+      "LAYER",
+      "NDI",
+      "NODE",
+      "NOEL",
+      "NPROPS",
+      "NPT",
+      "NSHR",
+      "NSTATV",
+      "NTENS",
+      "PNEWDT",
+      "RPL",
+      "SCD",
+      "SPD",
+      "SSE",
+      "Y"
+    ],
+    "seed": [
+      "DSTRAN"
+    ]
+  }
+}

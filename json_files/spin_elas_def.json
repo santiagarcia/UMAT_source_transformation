@@ -1,0 +1,112 @@
+{
+  "case_name": "spin_elas_def",
+  "description": "Generated from UMAT source analysis. DDSDDE is configured as d STRESS / d DSTRAN; PROPS remain constants.",
+  "jacobian": {
+    "dependent": "STRESS",
+    "independent": "DSTRAN",
+    "target": "DDSDDE"
+  },
+  "otis": {
+    "ntens": 6,
+    "order": 1
+  },
+  "replace": {
+    "ddsdde_block": [
+      "58-60",
+      "64-66",
+      "104-114"
+    ]
+  },
+  "source": {
+    "file": "../UMATs/UMATs/ICP/spin/spin_elas_def.f"
+  },
+  "variables": {
+    "constant": [
+      "A",
+      "COORDS",
+      "DFRT",
+      "DM",
+      "DPRED",
+      "DROT",
+      "DSTR",
+      "DTEMP",
+      "DTIME",
+      "E",
+      "EBULK3",
+      "EG",
+      "EG2",
+      "ELAM",
+      "ONE",
+      "PREDEF",
+      "PROPS",
+      "STRAN",
+      "STRRAT",
+      "TEMP",
+      "THREE",
+      "TIME",
+      "TVAL",
+      "TWO",
+      "VAL1",
+      "VAL2",
+      "X",
+      "XIDEN",
+      "XNUE"
+    ],
+    "promote": [
+      "DFGI",
+      "DFGR",
+      "DFGRD0",
+      "DFGRD1",
+      "SPINW",
+      "STATEV",
+      "STR",
+      "STRESS",
+      "STRR",
+      "SW",
+      "TRVAL",
+      "TVEG",
+      "VEG",
+      "WS"
+    ],
+    "real": [
+      "CELENT",
+      "CMNAME",
+      "DDSDDE",
+      "DDSDDT",
+      "DE",
+      "DEVITO",
+      "DF",
+      "DRPLDE",
+      "DRPLDT",
+      "I",
+      "J",
+      "JDOF",
+      "K",
+      "KINC",
+      "KSPT",
+      "KSTEP",
+      "LAYER",
+      "NDI",
+      "NODE",
+      "NOEL",
+      "NPROPS",
+      "NPT",
+      "NSHR",
+      "NSTATV",
+      "NTENS",
+      "ORIGN",
+      "P",
+      "PNEWDT",
+      "RPL",
+      "SCD",
+      "SPD",
+      "SSE",
+      "STRSS",
+      "TRAN",
+      "XIDENTY"
+    ],
+    "seed": [
+      "DSTRAN"
+    ]
+  }
+}

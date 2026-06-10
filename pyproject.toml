@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "umat-oti-standalone"
+version = "0.1.0"
+description = "Standalone source bundle for deterministic OTIS tangent generation for Abaqus UMATs."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+	"numpy>=1.26",
+	"pandas>=2.0",
+	"streamlit>=1.30",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.scripts]
+umat-oti = "umat_oti.cli:main"
+umat-oti-config = "umat_oti.cli_json:main"
+umat-oti-batch = "umat_oti.cli_batch:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

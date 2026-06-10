@@ -1,0 +1,117 @@
+{
+  "case_name": "code_exp",
+  "description": "Generated from UMAT source analysis. DDSDDE is configured as d STRESS / d DSTRAN; PROPS remain constants.",
+  "jacobian": {
+    "dependent": "STRESS",
+    "independent": "DSTRAN",
+    "target": "DDSDDE"
+  },
+  "otis": {
+    "ntens": 4,
+    "order": 1
+  },
+  "replace": {
+    "ddsdde_block": [
+      "212-214"
+    ]
+  },
+  "source": {
+    "file": "../../UMATs/UMATs/ICP/plasticity_exp/code_exp.f"
+  },
+  "variables": {
+    "constant": [
+      "COORDS",
+      "DDS",
+      "DLAM",
+      "DM",
+      "DPRED",
+      "DROT",
+      "DTEMP",
+      "DTIME",
+      "E",
+      "EBULK3",
+      "EG",
+      "EG2",
+      "ELAM",
+      "H",
+      "ONE",
+      "PREDEF",
+      "PROPS",
+      "SIGY0",
+      "STRAN",
+      "TEMP",
+      "TERM3",
+      "THREE",
+      "TIME",
+      "TWO",
+      "VAL1",
+      "XIDEN",
+      "XNUE"
+    ],
+    "promote": [
+      "DESTRAN",
+      "DLAMBDA",
+      "DPSTRAN",
+      "DSTR",
+      "DSTRESS",
+      "DV",
+      "DYPROD",
+      "P",
+      "PJ",
+      "R",
+      "STATEV",
+      "STR",
+      "STRESS",
+      "TERM1",
+      "TERM2",
+      "XNDIR",
+      "XNV",
+      "XNVE",
+      "ZY"
+    ],
+    "real": [
+      "CELENT",
+      "CMNAME",
+      "DDSDDE",
+      "DDSDDT",
+      "DEVITO",
+      "DFGRD0",
+      "DFGRD1",
+      "DM1",
+      "DM2",
+      "DM3",
+      "DPROD",
+      "DRPLDE",
+      "DRPLDT",
+      "EFF1",
+      "HARD",
+      "I",
+      "J",
+      "K",
+      "KINC",
+      "KSPT",
+      "KSTEP",
+      "LAYER",
+      "NDI",
+      "NOEL",
+      "NPROPS",
+      "NPT",
+      "NSHR",
+      "NSTATV",
+      "NTENS",
+      "PNEWDT",
+      "RPL",
+      "SCD",
+      "SPD",
+      "SSE",
+      "STRSS",
+      "X",
+      "XIDENTY",
+      "XNDN",
+      "Y"
+    ],
+    "seed": [
+      "DSTRAN"
+    ]
+  }
+}

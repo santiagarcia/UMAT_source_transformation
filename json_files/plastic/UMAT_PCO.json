@@ -1,0 +1,114 @@
+{
+  "case_name": "UMAT_PCO",
+  "description": "Generated from UMAT source analysis. DDSDDE is configured as d STRESS / d DSTRAN; PROPS remain constants.",
+  "jacobian": {
+    "dependent": "STRESS",
+    "independent": "DSTRAN",
+    "target": "DDSDDE"
+  },
+  "otis": {
+    "ntens": 6,
+    "order": 1
+  },
+  "replace": {
+    "ddsdde_block": [
+      "118-128"
+    ]
+  },
+  "source": {
+    "file": "../../UMATs/UMATs/ICP/UMAT_PCO.for"
+  },
+  "variables": {
+    "constant": [
+      "COORDS",
+      "DP",
+      "DPRED",
+      "DROT",
+      "DTEMP",
+      "DTIME",
+      "EMOD",
+      "ENUMAX",
+      "IFLAG",
+      "ONE",
+      "P",
+      "PREDEF",
+      "PROPS",
+      "Q",
+      "SIX",
+      "STRAN",
+      "TEMP",
+      "THREE",
+      "TIME",
+      "TWO",
+      "ZERO"
+    ],
+    "promote": [
+      "AUX10",
+      "AUX14",
+      "AUX8",
+      "CALFA2",
+      "CBETA",
+      "CBETA2",
+      "DC",
+      "DIAG",
+      "DS",
+      "DSTRESS",
+      "E",
+      "EELAS",
+      "EHARD",
+      "EPLAS",
+      "EQPLAS",
+      "EQPLAS1",
+      "FBAR",
+      "FGAM",
+      "FJAC",
+      "GAM_PAR",
+      "GDIA",
+      "NVALUE",
+      "SDEV",
+      "SINVAR",
+      "STATEV",
+      "STRESS",
+      "SYIEL0",
+      "SYIELD",
+      "TABLE",
+      "TETA2"
+    ],
+    "real": [
+      "CELENT",
+      "CMNAME",
+      "DDSDDE",
+      "DDSDDT",
+      "DFGRD0",
+      "DFGRD1",
+      "DRPLDE",
+      "DRPLDT",
+      "EBULK3",
+      "EG",
+      "EG2",
+      "ELAM",
+      "ENU",
+      "ITER",
+      "K1",
+      "KINC",
+      "KSPT",
+      "KSTEP",
+      "LAYER",
+      "NDI",
+      "NOEL",
+      "NPROPS",
+      "NPT",
+      "NSHR",
+      "NSTATV",
+      "NTENS",
+      "PNEWDT",
+      "RPL",
+      "SCD",
+      "SPD",
+      "SSE"
+    ],
+    "seed": [
+      "DSTRAN"
+    ]
+  }
+}
