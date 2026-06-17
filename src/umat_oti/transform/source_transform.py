@@ -3877,6 +3877,18 @@ def _parse_extra_jacobian_contracts(config: dict[str, Any]) -> list[dict[str, An
             # variables read by the residual carry the seed's derivative even
             # when the natural code order updates them only after the residual.
             "reseed_prelude": [str(line) for line in (loop.get("reseed_prelude") or []) if str(line).strip()],
+            # Mid-loop preludes: raw Fortran spliced after a specific line (e.g.
+            # after FBAR is computed) so a residual that reads a frozen
+            # intermediate computed later in the natural code order can instead
+            # read a seed-carrying recompute. Each entry: {after_line, statements}.
+            "loop_preludes": [
+                {
+                    "after_line": int(block.get("after_line") or 0),
+                    "statements": [str(line) for line in (block.get("statements") or []) if str(line).strip()],
+                }
+                for block in (loop.get("preludes") or [])
+                if isinstance(block, dict) and int(block.get("after_line") or 0) > 0 and (block.get("statements") or [])
+            ],
         }
         post_loop_extractions = _normalize_auxiliary_extractions(entry.get("post_loop_extractions") or [], default_kind="scalar_from_scalar")
         additional_extractions = _normalize_auxiliary_extractions(entry.get("additional_extractions") or [])
@@ -4408,6 +4420,14 @@ def _extra_jacobian_splice_maps(
                 for raw_line in prelude_raw:
                     reseed.append(_stmt(form, str(raw_line).strip()))
             after_inserts.setdefault(loop_top, []).extend(reseed)
+        for prelude_block in contract.get("loop_preludes") or []:
+            after_line = int(prelude_block.get("after_line") or 0)
+            statements = prelude_block.get("statements") or []
+            if after_line and statements:
+                block_lines = [_comment_line(form, f"OTIS mid-loop prelude: recompute seed-carrying intermediates after line {after_line}")]
+                for raw_line in statements:
+                    block_lines.append(_stmt(form, str(raw_line).strip()))
+                after_inserts.setdefault(after_line, []).extend(block_lines)
         if directions == 1 and extract_after_line and replace_var and output_var:
             extract = _auxiliary_extraction_lines(
                 form,

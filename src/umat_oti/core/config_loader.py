@@ -687,6 +687,17 @@ def _expand_compact_loop(entry: dict[str, Any]) -> dict[str, Any]:
     }
     if isinstance(prelude, list) and prelude:
         result["reseed_prelude"] = [str(line) for line in prelude if str(line).strip()]
+    preludes = base.get("preludes") or entry.get("preludes") or []
+    expanded_preludes: list[dict[str, Any]] = []
+    if isinstance(preludes, list):
+        for block in preludes:
+            block_dict = _dict_or_empty(block)
+            after_line = _as_int(block_dict.get("after_line") or block_dict.get("after"))
+            statements = [str(line) for line in (block_dict.get("statements") or []) if str(line).strip()]
+            if after_line and statements:
+                expanded_preludes.append({"after_line": after_line, "statements": statements})
+    if expanded_preludes:
+        result["preludes"] = expanded_preludes
     return result
 
 
