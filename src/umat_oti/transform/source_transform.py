@@ -984,6 +984,11 @@ def _transform_source_text(
         replacement_names=replacement_names,
         type_name=type_name,
         ntens=ntens,
+        seed_dfgrd1_active=(
+            seed_dfgrd1_enabled
+            and "DFGRD1" in roles["promote"]
+            and mappings.get("dstran", "DSTRAN") in roles["seed"]
+        ),
     )
     preserved_ddsdde_output_lines = _preserved_ddsdde_output_lines(
         form=form,
@@ -1022,7 +1027,10 @@ def _transform_source_text(
                     type_name,
                     shadow_variables,
                     variable_shapes,
-                    synthetic_real_variables=_synthetic_real_surface_variables(config),
+                    synthetic_real_variables={
+                        **_synthetic_real_surface_variables(config),
+                        **_synthetic_real_jacobian_targets(config),
+                    },
                 )
             )
         if line_number + 1 == seed_insert_before_line and not initialization_inserted:
@@ -3613,8 +3621,16 @@ def _pure_seed_tangent_bridge_lines(
     replacement_names: dict[str, str],
     type_name: str,
     ntens: int,
+    seed_dfgrd1_active: bool = False,
 ) -> list[str]:
     if ntens <= 0 or not tangent_output_regions:
+        return []
+    # When the finite-strain DFGRD1 seed is active, every DSTRAN direction is
+    # routed through the executable stress path via DFGRD1 (see
+    # _finite_dfgrd1_seed_lines), so no direction is "omitted". Emitting the
+    # pure-seed fallback here would double-count those directions in DDSDDE
+    # (e.g. doubling the shear-diagonal tangent).
+    if seed_dfgrd1_active:
         return []
     dstran = mappings.get("dstran", "DSTRAN")
     stress = mappings.get("stress", "STRESS")
@@ -3956,6 +3972,40 @@ def _synthetic_real_surface_variables(config: dict[str, Any]) -> dict[str, str]:
             if name and shape:
                 result[name] = shape
     return result
+
+
+def _synthetic_real_jacobian_targets(config: dict[str, Any]) -> dict[str, str]:
+    """Real arrays that receive extracted constitutive-Jacobian values.
+
+    Targets named in a contract's ``additional_extractions`` (e.g. G1JAC) are
+    new variables that hold REAL extracted derivatives (like DDSDDE), so they
+    must be declared. The Fortran extent is inferred from the component
+    target_indices.
+    """
+    result: dict[str, str] = {}
+    for contract in _parse_extra_jacobian_contracts(config):
+        for extraction in contract.get("additional_extractions") or []:
+            name = str(extraction.get("target_variable") or "").upper()
+            if not name:
+                continue
+            shape = _indexed_dimension_shape(extraction.get("components") or [], "target_indices")
+            if shape and name not in result:
+                result[name] = shape
+    return result
+
+
+def _indexed_dimension_shape(components: list[dict[str, Any]], index_key: str) -> str:
+    """Infer a Fortran dimension string (e.g. "4,4") from component indices."""
+    extents: list[int] = []
+    for component in components:
+        indices = component.get(index_key) or []
+        for position, value in enumerate(indices):
+            extent = _as_int(value)
+            if position >= len(extents):
+                extents.append(extent)
+            else:
+                extents[position] = max(extents[position], extent)
+    return ",".join(str(extent) for extent in extents)
 
 
 def _jacobian_artifact_manifest(config: dict[str, Any]) -> list[dict[str, Any]]:

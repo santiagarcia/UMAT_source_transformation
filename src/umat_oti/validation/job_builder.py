@@ -1311,8 +1311,9 @@ def _write_extract_results_script(
     ntens: int,
     constitutive_artifacts: list[dict[str, Any]] | None = None,
 ) -> Path:
-    script = """from __future__ import annotations
-
+    script = """# Runs under the Abaqus-bundled Python interpreter, which is Python 2.7 in
+# Abaqus <= 2022 and Python 3 in Abaqus >= 2023. Keep this script compatible
+# with both: no annotations, no py3-only open() kwargs.
 import json
 import sys
 
@@ -1430,7 +1431,7 @@ def frame_record(frame, frame_index):
     }
 
 
-def main() -> None:
+def main():
     odb_path = sys.argv[1]
     output_path = sys.argv[2]
     odb = openOdb(odb_path, readOnly=True)
@@ -1463,7 +1464,7 @@ def main() -> None:
         }
     finally:
         odb.close()
-    with open(output_path, 'w', encoding='utf-8') as handle:
+    with open(output_path, 'w') as handle:
         json.dump(result, handle, indent=2, sort_keys=True)
 
 

@@ -27,10 +27,12 @@ You must fill in your own:
 
 - `source`
 - `promote`
-- `constant`
-- `real`
 - `replace`
 - `ntens`
+
+`constant` and `real` are optional. If you leave them out, the tool infers
+each remaining variable's role automatically. Add them only to override a
+specific variable that the tool classified incorrectly.
 
 4. Open `run_json_pipeline.py` and set:
 

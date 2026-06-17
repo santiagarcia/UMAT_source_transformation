@@ -14,13 +14,15 @@ This is the current compact JSON schema used by the GUI loader and the compact-c
     "target": "DDSDDE"
   },
   "promote": ["STRESS"],
-  "constant": ["PROPS", "STATEV"],
-  "real": ["DDSDDE", "NTENS"],
   "replace": ["120-132"],
   "ntens": 6,
   "order": 1
 }
 ```
+
+`constant` and `real` are no longer required. Any variable you do not list is
+classified automatically. See the optional fields below if you need to override
+a specific classification.
 
 ## Required fields
 
@@ -54,16 +56,6 @@ This is the current compact JSON schema used by the GUI loader and the compact-c
 - Variables that should be promoted to OTI values.
 - These are usually the evolving stress-update quantities.
 
-`constant`
-
-- Variables that should stay constant during differentiation.
-- Material properties and fixed inputs usually belong here.
-
-`real`
-
-- Variables that must stay real, not OTI.
-- `DDSDDE` almost always belongs here because it receives extracted derivatives, not propagated OTI values.
-
 `replace`
 
 - Inclusive 1-based line ranges for the old DDSDDE block to replace.
@@ -80,6 +72,18 @@ This is the current compact JSON schema used by the GUI loader and the compact-c
 - OTI order. The current workflow is first-order, so this is normally `1`.
 
 ## Optional fields
+
+`constant`
+
+- Variables that should stay constant during differentiation (material properties, fixed inputs).
+- Optional override. Any variable you do not list is classified automatically.
+- Use this only to correct a variable the tool classified incorrectly.
+
+`real`
+
+- Variables that must stay real, not OTI (e.g. `DDSDDE`, integer indices, loop counters).
+- Optional override, inferred automatically when omitted.
+- In code generation `constant` and `real` are equivalent (both stay REAL and are not promoted); the distinction is only documentation.
 
 `description`
 
@@ -105,7 +109,7 @@ This is the current compact JSON schema used by the GUI loader and the compact-c
 
 ## Variable-role rules
 
-- `promote`, `constant`, and `real` must be disjoint.
+- If you supply `promote`, `constant`, and `real`, they must be disjoint.
 - If the same variable appears in more than one role list, config loading will fail.
 - Use uppercase names to match the rest of the repository and the scanner output.
 

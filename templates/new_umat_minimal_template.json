@@ -10,14 +10,6 @@
   "promote": [
     "STRESS"
   ],
-  "constant": [
-    "PROPS",
-    "STATEV"
-  ],
-  "real": [
-    "DDSDDE",
-    "NTENS"
-  ],
   "replace": [
     "START-END"
   ],

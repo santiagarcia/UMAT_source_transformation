@@ -991,7 +991,11 @@ def _validate_required_compact_project_config(config: dict[str, Any]) -> None:
         missing.append("jacobian.output")
     if not str(jacobian.get("seed", jacobian.get("independent", ""))).strip():
         missing.append("jacobian.seed")
-    for key in ("promote", "constant", "real"):
+    # Only `promote` is a required role list. `constant` and `real` are
+    # optional overrides: any variable not listed falls back to its
+    # auto-suggested role, and Constant vs Keep-real are equivalent in code
+    # generation, so omitting them does not change the transformed UMAT.
+    for key in ("promote",):
         if not isinstance(config.get(key), list):
             variables = _dict_or_empty(config.get("variables"))
             if key not in variables or not isinstance(variables.get(key), list):
