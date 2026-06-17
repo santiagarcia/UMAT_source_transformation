@@ -1180,6 +1180,7 @@ def _transform_source_text(
                         helper_output_surfaces,
                     )
                 )
+                output.extend(_helper_surface_sync_lines(form, helper_call_line or line, helper_output_surfaces))
                 helper_continuation_skip_lines.update(continuation_lines)
                 continue
             output[-1] = _transform_executable_line(
@@ -1189,6 +1190,7 @@ def _transform_source_text(
                 lifted_helper_names,
                 helper_output_surfaces,
             )
+            output.extend(_helper_surface_sync_lines(form, helper_call_line or line, helper_output_surfaces))
             shadow_sync_dirty_names.difference_update(_assigned_shadow_names(helper_call_line or line, helper_call_sync_names))
             helper_continuation_skip_lines.update(continuation_lines)
         elif _line_in_span(line_number, selected_routine_span) and _is_promoted_branch_line(line, replacement_names):
@@ -1864,6 +1866,43 @@ def _rewrite_lifted_helper_call(
     arguments.extend(f"{spec['caller_variable']}_OTI" for spec in appended_surfaces if spec.get("caller_variable"))
     rewritten_callee = f"{callee}_OTI" if callee in lifted_helper_names else callee
     return f"{match.group(1)}{rewritten_callee}({', '.join(arguments)})"
+
+
+def _helper_surface_sync_lines(
+    form: str,
+    call_line: str,
+    helper_output_surfaces: dict[str, list[dict[str, Any]]],
+) -> list[str]:
+    """Copy a lifted helper's surfaced OTI output back to its REAL shadow.
+
+    A helper_output_surface passes ``VAR_OTI`` into the lifted helper as an
+    output argument, but the caller's REAL ``VAR`` is never updated unless the
+    original UMAT later reads it. Emit ``VAR = REAL(VAR_OTI)`` (element-wise for
+    arrays) right after the call so the surfaced analytic value is usable.
+    """
+    if not helper_output_surfaces:
+        return []
+    match = re.match(r"^\s*CALL\s+([A-Z_][A-Z0-9_]*)\s*\(", call_line, flags=re.IGNORECASE)
+    if not match:
+        return []
+    callee = match.group(1).upper()
+    lines: list[str] = []
+    for spec in helper_output_surfaces.get(callee, []):
+        name = str(spec.get("caller_variable") or "").upper()
+        if not name:
+            continue
+        dims = [dim.strip() for dim in str(spec.get("declared_shape") or "").split(",") if dim.strip()]
+        if not dims:
+            lines.append(_stmt(form, f"{name} = REAL({name}_OTI)"))
+            continue
+        loop_vars = ["OTI_HI", "OTI_HJ", "OTI_HK"][: len(dims)]
+        for loop_var, extent in zip(loop_vars, dims):
+            lines.append(_stmt(form, f"DO {loop_var} = 1, {extent}"))
+        index = ", ".join(loop_vars)
+        lines.append(_stmt(form, f"   {name}({index}) = REAL({name}_OTI({index}))"))
+        for _ in dims:
+            lines.append(_stmt(form, "END DO"))
+    return lines
 
 
 def _normalize_typed_intrinsics_in_oti_expression(line: str) -> str:
