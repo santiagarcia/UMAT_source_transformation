@@ -130,6 +130,12 @@ def helper_lift_closure(
         for callee in _routine_callees(routine, parsed.form, source_lines):
             if callee == selected_umat.upper():
                 continue
+            if callee in _LIFTED_BODY_INLINED:
+                # Trivial utility (e.g. KCLEAR) inlined directly in the lifted
+                # body, so it needs no definition and is not lifted. Lets UMATs
+                # that omit its definition (it resolves from a shared library at
+                # Abaqus link time) still lift their helper closures.
+                continue
             if callee not in routines:
                 raise HelperLiftingError(
                     f"Helper lifting for {current} reached external or undefined callee {callee}. Add lifting support for that dependency before rewriting the call through OTI."
@@ -182,6 +188,37 @@ def _routine_callees(routine: ParsedSubroutine, form: str, source_lines: list[st
                 seen.add(callee)
                 ordered.append(callee)
     return tuple(ordered)
+
+
+# Trivial utility helpers inlined directly inside lifted helper bodies (so they
+# need no source definition and are never lifted). KCLEAR(X,NR,NC) zeroes X.
+_LIFTED_BODY_INLINED = frozenset({"KCLEAR"})
+
+_KCLEAR_CALL_RE = re.compile(
+    r"^\s*CALL\s+KCLEAR\s*\(\s*([A-Za-z_]\w*)\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)\s*$",
+    re.IGNORECASE,
+)
+
+
+def _kclear_inline_lines(statement: str) -> list[str] | None:
+    """Inline a CALL KCLEAR(target, nr, nc) as an explicit zeroing loop.
+
+    Returns None if the statement is not a KCLEAR call. Loop indices use M-names
+    (integer under the lifted body's `implicit integer (i-n)`).
+    """
+    match = _KCLEAR_CALL_RE.match(statement)
+    if not match:
+        return None
+    target, nr, nc = match.group(1), match.group(2).strip(), match.group(3).strip()
+    if nc == "1":
+        return [f"    do mclr1 = 1, {nr}", f"      {target}(mclr1) = 0.0d0", "    end do"]
+    return [
+        f"    do mclr1 = 1, {nr}",
+        f"      do mclr2 = 1, {nc}",
+        f"        {target}(mclr1,mclr2) = 0.0d0",
+        "      end do",
+        "    end do",
+    ]
 
 
 def _lift_helper_routine(
@@ -303,6 +340,10 @@ def _lift_helper_routine(
     lines.extend(data_assignments)
     for raw in body:
         label_prefix, statement = _split_label_and_statement(raw, form)
+        kclear_lines = _kclear_inline_lines(statement)
+        if kclear_lines is not None:
+            lines.extend(kclear_lines)
+            continue
         rewritten = _rewrite_helper_executable_line(statement, lifted_names, oti_names)
         if re.match(r"^\s*RETURN\b", rewritten, re.IGNORECASE) and helper_output_surfaces:
             lines.extend(_helper_output_surface_lines(helper_output_surfaces))

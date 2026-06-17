@@ -22,7 +22,7 @@ def run_config_transform(config_path: Path, out_dir: Path) -> tuple[dict[str, An
     source = config.get("source", {}) if isinstance(config.get("source"), dict) else {}
     source_path = Path(str(source.get("selected_umat_file", ""))).expanduser()
     if not source_path.is_file():
-        return {"config": str(config_path), "error": f"Source file not found: {source_path}"}, 1
+        return {"config": str(config_path), "error": f"Source file not found: {source_path}", "status_category": "source_not_found"}, 1
 
     source_text = source_path.read_text(encoding="utf-8", errors="replace")
     config = merge_completed_anchors_into_config(config, source_text)
@@ -39,6 +39,7 @@ def run_config_transform(config_path: Path, out_dir: Path) -> tuple[dict[str, An
         "order": settings.get("order"),
     }
     if completion.get("status") == "needs_json_completion":
+        summary["status_category"] = "needs_json_completion"
         return summary, 2
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -51,9 +52,24 @@ def run_config_transform(config_path: Path, out_dir: Path) -> tuple[dict[str, An
             "report_path": str(result.report_path or ""),
             "transformed_source": str(result.transformed_source_path or ""),
             "semantic_checks": result.report.get("semantic_checks", {}),
+            "status_category": _classify_outcome(result),
         }
     )
     return summary, 0 if result.success else 1
+
+
+def _classify_outcome(result: Any) -> str:
+    """Legible outcome category for the transform (robustness/triage aid)."""
+    if not result.success:
+        return "transform_blocked" if result.blockers else "transform_failed"
+    semantic = result.report.get("semantic_checks", {}) if isinstance(result.report, dict) else {}
+    if any(value is False for value in semantic.values()):
+        return "succeeded_semantic_check_warnings"
+    if result.warnings:
+        # e.g. a helper passed through instead of OTI-lifted: derivatives may be
+        # approximate on that path. Surface it rather than reporting clean success.
+        return "succeeded_with_warnings"
+    return "succeeded"
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -15,7 +15,7 @@ from umat_oti.oti.module_generator import OtilibGenerationError, generate_otilib
 from umat_oti.transform.helper_lifting import HelperLiftingError, helper_lift_closure, lift_helper_set_source
 
 
-INLINEABLE_HELPERS = {"DOTPROD", "DYADICPROD", "KCLEAR", "KDAMACAL", "KDEVIA", "KEFFP", "KINVER", "KMAVEC", "KMLT", "KMLT1", "KMMULT", "KMTRAN", "KPROYECTOR", "KSMULT", "KTRACE", "KTRANS", "KUPDVEC", "VSPRATE"}
+INLINEABLE_HELPERS = {"DOTPROD", "DYADICPROD", "KCLEAR", "KDAMACAL", "KDEVIA", "KEFFP", "KINVER", "KMATSUB", "KMAVEC", "KMLT", "KMLT1", "KMMULT", "KMTRAN", "KPROYECTOR", "KSMULT", "KTRACE", "KTRANS", "KUPDVEC", "VSPRATE"}
 TYPED_INTRINSIC_NORMALIZATIONS = {
     "DABS": "ABS",
     "DMAX1": "MAX",
@@ -2067,6 +2067,16 @@ def _inline_pure_arithmetic_helper_call(
         )
     if callee == "KPROYECTOR" and len(arguments) >= 1:
         return _inline_kproyector(form, arguments[0], _argument_shape(arguments[0], variable_shapes), configured_ntens)
+    if callee == "KMATSUB" and len(arguments) >= 5:
+        return _inline_kmatsub(
+            form,
+            arguments[0],
+            arguments[1],
+            arguments[2],
+            arguments[3],
+            arguments[4],
+            arguments[5] if len(arguments) >= 6 else "0",
+        )
     if callee == "KCLEAR" and len(arguments) >= 3:
         return _inline_kclear(
             form,
@@ -2476,9 +2486,12 @@ def _inline_kclear(form: str, target: str, nra: str, nca: str, target_shape: str
 
 
 def _inline_kproyector(form: str, target: str, target_shape: str, configured_ntens: int) -> list[str]:
-    if configured_ntens < 6:
-        del target, target_shape
-        return [_comment_line(form, "OTIS inline helper KPROYECTOR (projector applied directly in downstream KMMULT rewrites)")]
+    # Always populate the deviatoric projector matrix. It is a constant (2/3,
+    # -1/3 entries) and is used both as KMMULT(P, vector) (rewritten directly by
+    # _inline_projector_kmmult, which ignores P's values) AND as a plain matrix
+    # operand, e.g. KMMULT(QT, P, ...). Leaving P unpopulated for ntens<6 zeroed
+    # those matrix-operand uses and collapsed the in-loop spectral FBAR.
+    del configured_ntens
     dims = _shape_dimensions(target_shape)
     rows = dims[0] if len(dims) >= 1 else "6"
     cols = dims[1] if len(dims) >= 2 else rows
@@ -2501,6 +2514,24 @@ def _inline_kproyector(form: str, target: str, target_shape: str, configured_nte
     for row, column, value in entries:
         lines.append(_stmt(form, f"IF ({rows} .GE. {row} .AND. {cols} .GE. {column}) {target}({row},{column})={value}"))
     return lines
+
+
+def _inline_kmatsub(form: str, a: str, nra: str, nca: str, b: str, c: str, iflag: str) -> list[str]:
+    # KMATSUB(A,NRA,NCA,B,C,IFLAG): C = A + B*SCALAR, SCALAR=-1 (default) or +1
+    # if IFLAG==1. Pure arithmetic; inlined so it never blocks helper lifting
+    # (PCO/VPDCO call it but omit its definition).
+    op = "+" if str(iflag).strip() == "1" else "-"
+    rhs = f"{a}(OTI_HI,OTI_HJ) {op} {b}(OTI_HI,OTI_HJ)"
+    if not _is_oti_argument(c) and (_is_oti_argument(a) or _is_oti_argument(b)):
+        rhs = f"REAL({rhs})"
+    return [
+        _comment_line(form, "OTIS inline pure arithmetic helper KMATSUB"),
+        _stmt(form, f"DO OTI_HI = 1, {nra}"),
+        _stmt(form, f"   DO OTI_HJ = 1, {nca}"),
+        _stmt(form, f"      {c}(OTI_HI,OTI_HJ) = {rhs}"),
+        _stmt(form, "   END DO"),
+        _stmt(form, "END DO"),
+    ]
 
 
 def _inline_projector_kmmult(
@@ -4410,7 +4441,99 @@ def _finite_strain_use_lines(analysis: dict[str, Any]) -> list[int]:
 def _write_report(output_dir: Path, report: dict[str, Any]) -> Path:
     path = output_dir / "transform_report.json"
     path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+    # Human-readable companion report. The JSON remains for machine consumption
+    # (validation pipeline); the .txt is the report a person actually reads.
+    (output_dir / "transform_report.txt").write_text(_render_report_text(report), encoding="utf-8")
     return path
+
+
+def _render_report_text(report: dict[str, Any]) -> str:
+    def region_span(row: dict[str, Any]) -> str:
+        start, end = row.get("start_line"), row.get("end_line")
+        if start and end:
+            return f"lines {start}-{end}"
+        return str(row.get("region_id") or row.get("classification") or "").strip()
+
+    lines: list[str] = []
+    umat = str(report.get("selected_umat") or "UMAT")
+    bar = "=" * 76
+    lines.append(bar)
+    lines.append(f"  UMAT to OTI/HYPAD TRANSFORMATION REPORT  --  {umat}")
+    lines.append(bar)
+    lines.append("")
+    lines.append(f"Source file       : {report.get('source_file', '')}")
+    status = "SUCCESS" if report.get("success") else "FAILED"
+    lines.append(f"Transformation    : {status}")
+    lines.append(f"Anchor completion : {_dict(report.get('anchor_completion')).get('status', '')}")
+    blockers = report.get("blockers") or []
+    warnings = report.get("warnings") or []
+    if blockers:
+        lines.append("Blockers          :")
+        lines.extend(f"    - {b}" for b in blockers)
+    if warnings:
+        lines.append("Warnings          :")
+        lines.extend(f"    - {w}" for w in warnings)
+    if not blockers and not warnings:
+        lines.append("Blockers/Warnings : none")
+
+    lines.append("")
+    lines.append("-- OTI configuration " + "-" * 55)
+    lines.append(f"ntens = {report.get('ntens')}   order = {report.get('oti_order')}   "
+                 f"type = {report.get('oti_type_name', '')}   module = {report.get('oti_module_name', '')}")
+    directions = _dict(report.get("directions_required"))
+    if directions:
+        lines.append(f"OTI directions required: {directions.get('total_directions', directions)}")
+
+    lines.append("")
+    lines.append("-- Variable roles " + "-" * 58)
+    for label, key in (("Seeded", "seed_variables"), ("Promoted to OTI", "promoted_variables"),
+                       ("Kept constant", "constant_variables"), ("Kept real", "keep_real_variables")):
+        vals = report.get(key) or []
+        preview = ", ".join(str(v) for v in vals[:12]) + (" ..." if len(vals) > 12 else "")
+        lines.append(f"{label:<16}: {len(vals):>3}   {preview}")
+
+    lines.append("")
+    lines.append("-- Main tangent (DDSDDE) " + "-" * 51)
+    jc = _dict(report.get("jacobian_contract"))
+    if jc:
+        lines.append(f"Contract : {jc.get('contract', '')}")
+        lines.append(f"seed = {jc.get('independent_variable', '')}   "
+                     f"output = {jc.get('dependent_variable', '')}   target = {jc.get('output_variable', 'DDSDDE')}")
+    old_tan = report.get("old_tangent_regions_replaced") or []
+    stress_regions = report.get("stress_regions_transformed") or []
+    lines.append(f"Old tangent blocks replaced: {len(old_tan)}  ({'; '.join(region_span(r) for r in old_tan)})")
+    lines.append(f"Stress-update regions transformed: {len(stress_regions)}")
+
+    extra = report.get("extra_jacobian_contracts") or []
+    if extra:
+        lines.append("")
+        lines.append("-- Internal / constitutive Jacobians " + "-" * 39)
+        for c in extra:
+            aux_targets = [str(e.get("target_variable") or "") for e in (c.get("additional_extractions") or []) if e.get("target_variable")]
+            target = c.get("replace_variable") or c.get("post_loop_jacobian_variable") or ", ".join(aux_targets)
+            lines.append(f"  [{c.get('id', '')}] {c.get('description', '')}")
+            lines.append(f"      seed = {c.get('seed_variable', '')}  ->  output = {c.get('output_variable', '')}"
+                         f"  ->  target = {target}   (dirs={c.get('seed_directions', 1)})")
+            loop_top = c.get("loop_top_line")
+            if loop_top:
+                lines.append(f"      loop top line {loop_top}, extract after line {c.get('extract_after_line', '')}")
+
+    checks = _dict(report.get("semantic_checks"))
+    if checks:
+        passed = sum(1 for v in checks.values() if v)
+        lines.append("")
+        lines.append(f"-- Semantic checks ({passed}/{len(checks)} passed) " + "-" * 40)
+        for name in sorted(checks):
+            lines.append(f"    [{'PASS' if checks[name] else 'FAIL'}] {name}")
+
+    generated = report.get("generated_files") or []
+    if generated:
+        lines.append("")
+        lines.append("-- Generated files " + "-" * 57)
+        lines.extend(f"    {Path(str(f)).name}" for f in generated)
+
+    lines.append("")
+    return "\n".join(lines) + "\n"
 
 
 def _transformed_filename(source_file: str) -> str:
