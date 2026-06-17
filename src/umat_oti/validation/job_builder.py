@@ -595,9 +595,7 @@ def _extra_jacobian_contract_candidates(contract: dict[str, Any]) -> list[dict[s
                         "component_labels": labels,
                     }
                 )
-    for index, row in enumerate(contract.get("additional_extractions", []) if isinstance(contract.get("additional_extractions"), list) else [], start=1):
-        if not isinstance(row, dict):
-            continue
+    for index, row in enumerate(_contract_extraction_rows(contract), start=1):
         target_variable = str(row.get("target_variable") or "").strip()
         if not target_variable:
             continue
@@ -692,11 +690,53 @@ def _artifact_component_expressions(
     return [], []
 
 
+def _contract_extraction_rows(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for key in ("additional_extractions", "post_loop_extractions"):
+        raw_entries = contract.get(key)
+        if not isinstance(raw_entries, list):
+            continue
+        for entry in raw_entries:
+            if not isinstance(entry, dict):
+                continue
+            row = _normalized_contract_extraction_row(entry, post_loop=(key == "post_loop_extractions"))
+            marker = _auxiliary_extraction_key(row)
+            if marker in seen:
+                continue
+            seen.add(marker)
+            rows.append(row)
+    return rows
+
+
+def _normalized_contract_extraction_row(entry: dict[str, Any], *, post_loop: bool) -> dict[str, Any]:
+    row = dict(entry)
+    if post_loop:
+        target = str(row.get("target_variable") or row.get("target") or "").strip().upper()
+        kind = str(row.get("extract_kind") or row.get("kind") or "real_copy_map")
+        row["extract_kind"] = kind
+        if target and kind == "real_copy_map":
+            row["target_variable"] = target
+            row["from_output_variable"] = target
+    return row
+
+
+def _auxiliary_extraction_key(entry: dict[str, Any]) -> str:
+    canonical = {
+        "target_variable": str(entry.get("target_variable") or "").strip().upper(),
+        "from_output_variable": str(entry.get("from_output_variable") or "").strip().upper(),
+        "after_line": str(entry.get("after_line") or entry.get("extract_after_line") or ""),
+        "extract_kind": str(entry.get("extract_kind") or entry.get("kind") or ""),
+        "components": entry.get("components") if isinstance(entry.get("components"), list) else [],
+    }
+    return json.dumps(canonical, sort_keys=True)
+
+
 def _has_additional_target(contract: dict[str, Any], target_variable: str) -> bool:
     target = str(target_variable or "").strip().upper()
     if not target:
         return False
-    rows = contract.get("additional_extractions") if isinstance(contract.get("additional_extractions"), list) else []
+    rows = _contract_extraction_rows(contract)
     return any(str(row.get("target_variable") or "").strip().upper() == target for row in rows if isinstance(row, dict))
 
 

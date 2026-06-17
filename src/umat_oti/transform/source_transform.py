@@ -951,6 +951,7 @@ def _transform_source_text(
     old_region_by_line = _region_by_line(tangent_regions_to_skip)
     removable_io_by_line = _removable_file_io_by_line(config)
     stress_line_numbers = _line_set(regions["stress"])
+    projector_entries = _kproyector_entries_from_source(source_text)
     lifted_helper_argument_shadows = _lifted_helper_argument_shadow_names(config, regions["stress"], lifted_helper_names, variable_shapes)
     shadow_variable_names = _shadow_variable_names_for_selected_routine(lines, selected_routine_span, roles, argument_variables)
     shadow_variable_names.update(lifted_helper_argument_shadows)
@@ -1148,7 +1149,14 @@ def _transform_source_text(
                 form,
                 variable_shapes,
             )
-            inlined_helper = _inline_pure_arithmetic_helper_call(helper_call_line or line, replacement_names, form, variable_shapes, ntens)
+            inlined_helper = _inline_pure_arithmetic_helper_call(
+                helper_call_line or line,
+                replacement_names,
+                form,
+                variable_shapes,
+                ntens,
+                projector_entries,
+            )
             if inlined_helper:
                 output.pop()
                 output.extend(helper_sync_lines)
@@ -1982,6 +1990,7 @@ def _inline_pure_arithmetic_helper_call(
     form: str,
     variable_shapes: dict[str, str],
     configured_ntens: int,
+    projector_entries: tuple[tuple[int, int, str], ...] = (),
 ) -> list[str]:
     match = re.match(r"^\s*CALL\s+(\w+)\s*\((.*)\)\s*$", line, flags=re.IGNORECASE)
     if not match:
@@ -2019,7 +2028,13 @@ def _inline_pure_arithmetic_helper_call(
             arguments[8],
         )
     if callee == "KPROYECTOR" and len(arguments) >= 1:
-        return _inline_kproyector(form, arguments[0], _argument_shape(arguments[0], variable_shapes), configured_ntens)
+        return _inline_kproyector(
+            form,
+            arguments[0],
+            _argument_shape(arguments[0], variable_shapes),
+            configured_ntens,
+            projector_entries,
+        )
     if callee == "KCLEAR" and len(arguments) >= 3:
         return _inline_kclear(
             form,
@@ -2428,16 +2443,28 @@ def _inline_kclear(form: str, target: str, nra: str, nca: str, target_shape: str
     ]
 
 
-def _inline_kproyector(form: str, target: str, target_shape: str, configured_ntens: int) -> list[str]:
-    if configured_ntens < 6:
-        del target, target_shape
-        return [_comment_line(form, "OTIS inline helper KPROYECTOR (projector applied directly in downstream KMMULT rewrites)")]
+def _inline_kproyector(
+    form: str,
+    target: str,
+    target_shape: str,
+    configured_ntens: int,
+    projector_entries: tuple[tuple[int, int, str], ...] = (),
+) -> list[str]:
     dims = _shape_dimensions(target_shape)
-    rows = dims[0] if len(dims) >= 1 else "6"
+    entries = projector_entries or _default_projector_entries(configured_ntens)
+    max_row = max((row for row, _, _ in entries), default=max(configured_ntens, 1))
+    rows = dims[0] if len(dims) >= 1 else str(max(max_row, configured_ntens, 1))
     cols = dims[1] if len(dims) >= 2 else rows
     lines = [_comment_line(form, "OTIS inline helper KPROYECTOR")]
     lines.extend(_zero_matrix_lines(form, target, rows, cols))
-    entries = (
+    for row, column, value in entries:
+        lines.append(_stmt(form, f"IF ({rows} .GE. {row} .AND. {cols} .GE. {column}) {target}({row},{column})={value}"))
+    return lines
+
+
+def _default_projector_entries(configured_ntens: int) -> tuple[tuple[int, int, str], ...]:
+    shear_44 = "TWO" if configured_ntens >= 6 else "ONE"
+    entries: list[tuple[int, int, str]] = [
         (1, 1, "TWO/THREE"),
         (1, 2, "-ONE/THREE"),
         (1, 3, "-ONE/THREE"),
@@ -2447,13 +2474,37 @@ def _inline_kproyector(form: str, target: str, target_shape: str, configured_nte
         (3, 1, "-ONE/THREE"),
         (3, 2, "-ONE/THREE"),
         (3, 3, "TWO/THREE"),
-        (4, 4, "TWO"),
-        (5, 5, "ONE"),
-        (6, 6, "ONE"),
-    )
-    for row, column, value in entries:
-        lines.append(_stmt(form, f"IF ({rows} .GE. {row} .AND. {cols} .GE. {column}) {target}({row},{column})={value}"))
-    return lines
+    ]
+    if configured_ntens >= 4:
+        entries.append((4, 4, shear_44))
+    if configured_ntens >= 5:
+        entries.append((5, 5, "ONE"))
+    if configured_ntens >= 6:
+        entries.append((6, 6, "ONE"))
+    return tuple(entries)
+
+
+def _kproyector_entries_from_source(source_text: str) -> tuple[tuple[int, int, str], ...]:
+    match = re.search(r"(?ims)^\s*SUBROUTINE\s+KPROYECTOR\s*\(([^)]*)\)(.*?)(?=^\s*END\s*$)", source_text)
+    if not match:
+        return ()
+    arguments = [argument.strip() for argument in match.group(1).split(",")]
+    if not arguments or not arguments[0]:
+        return ()
+    target = re.escape(arguments[0])
+    assignment = re.compile(rf"^\s*{target}\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)\s*=\s*(.+?)\s*$", flags=re.IGNORECASE)
+    entries: list[tuple[int, int, str]] = []
+    for raw_line in match.group(2).splitlines():
+        stripped = raw_line.strip()
+        if not stripped or stripped[0].upper() in {"C", "!"}:
+            continue
+        line_match = assignment.match(raw_line)
+        if not line_match:
+            continue
+        value = line_match.group(3).split("!", 1)[0].strip()
+        if value:
+            entries.append((int(line_match.group(1)), int(line_match.group(2)), value))
+    return tuple(entries)
 
 
 def _inline_projector_kmmult(
@@ -2801,7 +2852,7 @@ def _inline_kmmult(
     output_shape: str,
     configured_ntens: int,
 ) -> list[str]:
-    del nrb
+    del nrb, configured_ntens
     left_dims = _shape_dimensions(left_shape)
     right_dims = _shape_dimensions(right_shape)
     output_dims = _shape_dimensions(output_shape)
@@ -2809,11 +2860,6 @@ def _inline_kmmult(
     right_is_vector = len(right_dims) == 1
     output_is_vector = len(output_dims) == 1
     output_is_oti = _is_oti_argument(output)
-    left_base_name = _base_argument_name(left)
-    if left_base_name.endswith("_OTI"):
-        left_base_name = left_base_name[:-4]
-    if configured_ntens < 6 and left_base_name == "P" and not left_is_vector and str(ncb).strip() == "1":
-        return _inline_projector_kmmult(form, right, output, nra, right_shape, output_shape)
     left_ref = f"{left}(OTI_HK)" if left_is_vector else f"{left}(OTI_HI,OTI_HK)"
     right_ref_vector = f"{right}(OTI_HK)" if right_is_vector else f"{right}(OTI_HK,1)"
     right_ref_matrix = f"{right}(OTI_HK)" if right_is_vector else f"{right}(OTI_HK,OTI_HJ)"
@@ -3827,7 +3873,8 @@ def _parse_extra_jacobian_contracts(config: dict[str, Any]) -> list[dict[str, An
         internal_use = _dict(entry.get("internal_use"))
         post_loop_restore = _dict(entry.get("post_loop_restore"))
         debug_dump = _dict(entry.get("debug_dump"))
-        directions = int(seed.get("directions") or 1)
+        raw_directions = seed.get("directions")
+        directions = _as_int(raw_directions) if raw_directions not in (None, "") else 1
         seed_shape = str(seed.get("shape") or "scalar")
         normalized = {
             "id": str(entry.get("id") or f"jacobian_request_{index+1}"),
@@ -3856,12 +3903,42 @@ def _parse_extra_jacobian_contracts(config: dict[str, Any]) -> list[dict[str, An
             "debug_dump_enabled": bool(debug_dump.get("enabled", False)),
             "debug_dump_fields": [str(field) for field in (debug_dump.get("fields") or [])],
         }
+        copy_candidates = _materialized_real_copy_candidates(config)
         post_loop_extractions = _normalize_auxiliary_extractions(entry.get("post_loop_extractions") or [], default_kind="scalar_from_scalar")
+        post_loop_extractions = [
+            _normalize_materialized_auxiliary_extraction(entry, copy_candidates=copy_candidates)
+            for entry in post_loop_extractions
+        ]
         additional_extractions = _normalize_auxiliary_extractions(entry.get("additional_extractions") or [])
+        additional_extractions = [
+            _normalize_materialized_auxiliary_extraction(entry, copy_candidates=copy_candidates)
+            for entry in additional_extractions
+        ]
         normalized["post_loop_extractions"] = post_loop_extractions
         normalized["additional_extractions"] = [*additional_extractions, *post_loop_extractions]
         parsed.append(normalized)
     return parsed
+
+
+def _materialized_real_copy_candidates(config: dict[str, Any]) -> set[str]:
+    roles = _roles_from_config(config)
+    candidates: set[str] = set(roles["promote"])
+    for key in ("promote", "promoted"):
+        candidates.update(_upper_set(config.get(key)))
+    variables = config.get("variables") if isinstance(config.get("variables"), dict) else {}
+    for key in ("promote", "promoted"):
+        candidates.update(_upper_set(variables.get(key)))
+    return candidates
+
+
+def _normalize_materialized_auxiliary_extraction(entry: dict[str, Any], *, copy_candidates: set[str]) -> dict[str, Any]:
+    normalized = dict(entry)
+    target = str(normalized.get("target_variable") or "").upper()
+    kind = str(normalized.get("extract_kind") or "").lower()
+    if target and (target in copy_candidates or kind == "real_copy_map"):
+        normalized["from_output_variable"] = target
+        normalized["extract_kind"] = "real_copy_map"
+    return normalized
 
 
 def _seed_component_specs(seed_shape: str, directions: int, raw_components: Any) -> list[list[int]]:
@@ -4166,6 +4243,9 @@ def _directions_required(ntens: int, config: dict[str, Any]) -> dict[str, Any]:
     cursor = int(ntens or 0)
     for item in extras:
         directions = int(item.get("seed_directions") or 0)
+        if directions <= 0:
+            slot_assignments.append({"id": item["id"], "seed_variable": item["seed_variable"], "directions": 0, "slot_start": 0, "slot_end": 0})
+            continue
         start = cursor + 1
         end = cursor + directions
         slot_assignments.append({"id": item["id"], "seed_variable": item["seed_variable"], "directions": directions, "slot_start": start, "slot_end": end})
@@ -4335,7 +4415,8 @@ def _extra_jacobian_splice_maps(
         return after_inserts, replace_inserts
     cursor = int(ntens or 0)
     for contract in contracts:
-        directions = int(contract.get("seed_directions") or 1)
+        raw_directions = contract.get("seed_directions")
+        directions = _as_int(raw_directions) if raw_directions not in (None, "") else 1
         slot = cursor + 1
         cursor += directions
         seed_var = str(contract.get("seed_variable") or "").upper()
@@ -4358,6 +4439,8 @@ def _extra_jacobian_splice_maps(
                 extract_kind=str(contract.get("extract_kind") or "scalar_from_scalar"),
                 components=[{"target_indices": [], "output_indices": [], "seed_direction_offset": 0}],
             )
+            if extract:
+                extract.append(_stmt(form, f"{replace_var} = REAL({replace_var}_OTI)"))
             after_inserts.setdefault(extract_after_line, []).extend(extract)
         if contract.get("replace_lines"):
             for line_no in contract.get("replace_lines") or []:
@@ -4404,7 +4487,13 @@ def _apply_extra_jacobian_splices(
         out_index = original_line_to_output_index.get(original_line)
         if out_index is None:
             continue
-        operations.append((out_index, "after", new_lines, original_line))
+        insert_index = _output_index_after_original_line(
+            original_line,
+            output_index=out_index,
+            original_line_to_output_index=original_line_to_output_index,
+            output_length=len(output),
+        )
+        operations.append((insert_index, "after", new_lines, original_line))
     operations.sort(key=lambda item: item[0], reverse=True)
     for out_index, kind, new_lines, original_line in operations:
         if kind == "replace":
@@ -4412,7 +4501,24 @@ def _apply_extra_jacobian_splices(
             replacement = [_comment_old_line(form, original_text), *new_lines]
             output[out_index : out_index + 1] = replacement
         else:
-            output[out_index + 1 : out_index + 1] = new_lines
+            output[out_index:out_index] = new_lines
+
+
+def _output_index_after_original_line(
+    original_line: int,
+    *,
+    output_index: int,
+    original_line_to_output_index: dict[int, int],
+    output_length: int,
+) -> int:
+    following_indices = [
+        index
+        for line_number, index in original_line_to_output_index.items()
+        if line_number > original_line and index > output_index
+    ]
+    if following_indices:
+        return min(following_indices)
+    return min(output_index + 1, output_length)
 
 
 def _stmt(form: str, text: str) -> str:
@@ -4440,7 +4546,11 @@ def _is_return_line(line: str) -> bool:
 
 
 def _upper_set(values: Any) -> set[str]:
-    return {str(value).upper() for value in values or [] if str(value)}
+    if isinstance(values, dict):
+        values = values.values()
+    if not isinstance(values, (list, tuple, set)):
+        return set()
+    return {str(value).strip().upper() for value in values if str(value).strip()}
 
 
 def _helper_argument_base_names(arguments: Any) -> set[str]:

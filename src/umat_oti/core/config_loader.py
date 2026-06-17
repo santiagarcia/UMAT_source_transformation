@@ -481,8 +481,19 @@ def _compact_extra_jacobian_contract(contract: dict[str, Any]) -> dict[str, Any]
     replace_lines = [_as_int(value) for value in (internal_use.get("replace_lines") or []) if _as_int(value)]
     if replace_lines:
         compact["replace_lines"] = replace_lines
+    post_loop_entries = [
+        entry
+        for entry in (contract.get("post_loop_extractions") or [])
+        if isinstance(entry, dict)
+    ]
+    post_loop_keys = {_auxiliary_extraction_key(entry) for entry in post_loop_entries}
+    additional_source = [
+        entry
+        for entry in (contract.get("additional_extractions") or [])
+        if isinstance(entry, dict) and _auxiliary_extraction_key(entry) not in post_loop_keys
+    ]
     additional = _compact_auxiliary_extractions(
-        contract.get("additional_extractions"),
+        additional_source,
         output_variable=output_variable,
         output_shape=output_shape,
         default_after_line=extract_after,
@@ -490,6 +501,15 @@ def _compact_extra_jacobian_contract(contract: dict[str, Any]) -> dict[str, Any]
     )
     if additional:
         compact["additional_extractions"] = additional
+    post_loop = _compact_auxiliary_extractions(
+        _post_loop_real_copy_entries(post_loop_entries),
+        output_variable="",
+        output_shape="",
+        default_after_line=0,
+        default_kind="real_copy_map",
+    )
+    if post_loop:
+        compact["post_loop_extractions"] = post_loop
     post_loop_restore = _dict_or_empty(contract.get("post_loop_restore"))
     if post_loop_restore.get("enabled"):
         compact["post_loop_restore"] = copy.deepcopy(post_loop_restore)
@@ -601,6 +621,14 @@ def _expand_compact_extra_jacobian_contract(entry: dict[str, Any], index: int) -
     loop = _expand_compact_loop(entry)
     extraction = _expand_compact_extraction(entry)
     internal_use = _expand_compact_internal_use(entry)
+    post_loop = _expand_compact_auxiliary_extractions(
+        entry.get("post_loop_extractions"),
+        default_after_line=0,
+        default_kind="real_copy_map",
+        default_shape="",
+        default_output_variable="",
+    )
+    post_loop = _post_loop_real_copy_entries(post_loop)
     additional = _expand_compact_auxiliary_extractions(
         entry.get("additional_extractions"),
         default_after_line=_as_int(extraction.get("extract_after_line")),
@@ -639,8 +667,8 @@ def _expand_compact_extra_jacobian_contract(entry: dict[str, Any], index: int) -
         "post_loop_restore": _expand_compact_post_loop_restore(entry),
         "debug_dump": _expand_compact_debug_dump(entry),
     }
-    if isinstance(entry.get("post_loop_extractions"), list):
-        expanded["post_loop_extractions"] = copy.deepcopy(entry.get("post_loop_extractions"))
+    if post_loop:
+        expanded["post_loop_extractions"] = post_loop
     return expanded
 
 
@@ -726,6 +754,25 @@ def _expand_compact_post_loop_restore(entry: dict[str, Any]) -> dict[str, Any]:
         "residual_variable": str(raw.get("residual_variable") or "").upper(),
         "jacobian_variable": str(raw.get("jacobian_variable") or "").upper(),
     }
+
+
+def _post_loop_real_copy_entries(raw_entries: Any) -> list[dict[str, Any]]:
+    if not isinstance(raw_entries, list):
+        return []
+    normalized: list[dict[str, Any]] = []
+    for entry in raw_entries:
+        if not isinstance(entry, dict):
+            continue
+        row = dict(entry)
+        target = str(row.get("target_variable") or row.get("target") or "").upper()
+        kind = str(row.get("extract_kind") or row.get("kind") or "real_copy_map")
+        row["extract_kind"] = kind
+        if target and kind == "real_copy_map":
+            row["target_variable"] = target
+            row["from_output_variable"] = target
+            row.pop("from", None)
+        normalized.append(row)
+    return normalized
 
 
 def _expand_compact_debug_dump(entry: dict[str, Any]) -> dict[str, Any]:
@@ -855,12 +902,41 @@ def _helper_surface_has_compactable_structure(entry: dict[str, Any]) -> bool:
 def _contract_output_components(contract: dict[str, Any], output_variable: str) -> list[dict[str, Any]]:
     if not output_variable:
         return []
-    for entry in contract.get("additional_extractions") or []:
+    for entry in _contract_extraction_rows(contract):
         if not isinstance(entry, dict):
             continue
         if str(entry.get("target_variable") or "").upper() == output_variable.upper():
             return list(entry.get("components") or [])
     return []
+
+
+def _contract_extraction_rows(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for key in ("additional_extractions", "post_loop_extractions"):
+        raw_entries = contract.get(key)
+        if not isinstance(raw_entries, list):
+            continue
+        for entry in raw_entries:
+            if not isinstance(entry, dict):
+                continue
+            marker = _auxiliary_extraction_key(entry)
+            if marker in seen:
+                continue
+            seen.add(marker)
+            rows.append(entry)
+    return rows
+
+
+def _auxiliary_extraction_key(entry: dict[str, Any]) -> str:
+    canonical = {
+        "target_variable": str(entry.get("target_variable") or entry.get("target") or "").upper(),
+        "from_output_variable": str(entry.get("from_output_variable") or entry.get("from") or "").upper(),
+        "after_line": _as_int(entry.get("after_line") or entry.get("extract_after_line")),
+        "extract_kind": str(entry.get("extract_kind") or entry.get("kind") or ""),
+        "components": _copy_component_specs(entry.get("components")),
+    }
+    return json.dumps(canonical, sort_keys=True)
 
 
 def _is_implicit_output_extraction(

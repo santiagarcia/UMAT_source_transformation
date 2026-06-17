@@ -94,6 +94,7 @@ def main() -> int:
                         original_umat=source_path,
                         transformed_umat=Path(transform.transformed_source_path or ""),
                         generated_dir=transform_dir,
+                        project_config=config,
                         ntens=ntens,
                         abaqus_command=args.abaqus_command,
                         abaqus_modules=args.abaqus_modules,

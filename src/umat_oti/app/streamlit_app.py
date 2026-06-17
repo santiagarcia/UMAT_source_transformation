@@ -146,6 +146,33 @@ def _tail(text: str, n: int = 30) -> str:
     return "\n".join(lines[-n:])
 
 
+def _contract_extraction_rows(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for key in ("additional_extractions", "post_loop_extractions"):
+        raw_entries = contract.get(key)
+        if not isinstance(raw_entries, list):
+            continue
+        for entry in raw_entries:
+            if not isinstance(entry, dict):
+                continue
+            marker = json.dumps(
+                {
+                    "target_variable": str(entry.get("target_variable") or "").strip().upper(),
+                    "from_output_variable": str(entry.get("from_output_variable") or "").strip().upper(),
+                    "after_line": str(entry.get("after_line") or entry.get("extract_after_line") or ""),
+                    "extract_kind": str(entry.get("extract_kind") or entry.get("kind") or ""),
+                    "components": entry.get("components") if isinstance(entry.get("components"), list) else [],
+                },
+                sort_keys=True,
+            )
+            if marker in seen:
+                continue
+            seen.add(marker)
+            rows.append(entry)
+    return rows
+
+
 def _status_badge(status: str | None) -> str:
     if not status:
         return ":grey[unknown]"
@@ -244,7 +271,7 @@ def _tab_load_config() -> None:
                     "output_variable": out.get("variable"),
                     "output_shape": out.get("shape"),
                     "replaces": internal.get("replace_variable"),
-                    "additional_extractions": len(c.get("additional_extractions") or []),
+                    "auxiliary_outputs": len(_contract_extraction_rows(c)),
                 }
             )
         st.dataframe(rows, use_container_width=True, hide_index=True)
