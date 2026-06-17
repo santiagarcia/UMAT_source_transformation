@@ -678,12 +678,16 @@ def _expand_compact_output(entry: dict[str, Any]) -> dict[str, Any]:
 def _expand_compact_loop(entry: dict[str, Any]) -> dict[str, Any]:
     raw = entry.get("loop")
     base = _dict_or_empty(raw)
-    return {
+    prelude = base.get("reseed_prelude") or entry.get("reseed_prelude") or []
+    result = {
         "loop_top_line": _as_int(base.get("loop_top_line") or base.get("top") or entry.get("loop_top") or entry.get("loop_top_line")),
         "reseed_after_line": _as_int(base.get("reseed_after_line") or base.get("reseed_after") or entry.get("reseed_after") or entry.get("reseed_after_line")),
         "loop_exit_label": str(base.get("loop_exit_label") or base.get("exit_label") or entry.get("loop_exit_label") or entry.get("exit_label") or ""),
         "loop_exit_line": _as_int(base.get("loop_exit_line") or base.get("exit_line") or entry.get("loop_exit_line") or entry.get("exit_line")),
     }
+    if isinstance(prelude, list) and prelude:
+        result["reseed_prelude"] = [str(line) for line in prelude if str(line).strip()]
+    return result
 
 
 def _expand_compact_extraction(entry: dict[str, Any]) -> dict[str, Any]:

@@ -3871,6 +3871,12 @@ def _parse_extra_jacobian_contracts(config: dict[str, Any]) -> list[dict[str, An
             "post_loop_jacobian_variable": str(post_loop_restore.get("jacobian_variable") or internal_use.get("replace_variable") or "").upper(),
             "debug_dump_enabled": bool(debug_dump.get("enabled", False)),
             "debug_dump_fields": [str(field) for field in (debug_dump.get("fields") or [])],
+            # Raw Fortran statements spliced in immediately AFTER the loop-top
+            # reseed of the seed variable. Used to propagate the freshly seeded
+            # value through an update (e.g. a hardening recompute) so that
+            # variables read by the residual carry the seed's derivative even
+            # when the natural code order updates them only after the residual.
+            "reseed_prelude": [str(line) for line in (loop.get("reseed_prelude") or []) if str(line).strip()],
         }
         post_loop_extractions = _normalize_auxiliary_extractions(entry.get("post_loop_extractions") or [], default_kind="scalar_from_scalar")
         additional_extractions = _normalize_auxiliary_extractions(entry.get("additional_extractions") or [])
@@ -4396,6 +4402,11 @@ def _extra_jacobian_splice_maps(
         seed_components = [list(component) for component in (contract.get("seed_components") or [])]
         if loop_top and seed_var and seed_components:
             reseed = _extra_jacobian_reseed_lines(form, seed_var=seed_var, slot_start=slot, seed_components=seed_components)
+            prelude_raw = contract.get("reseed_prelude") or []
+            if prelude_raw:
+                reseed.append(_comment_line(form, f"OTIS reseed prelude: propagate seeded {seed_var} before residual"))
+                for raw_line in prelude_raw:
+                    reseed.append(_stmt(form, str(raw_line).strip()))
             after_inserts.setdefault(loop_top, []).extend(reseed)
         if directions == 1 and extract_after_line and replace_var and output_var:
             extract = _auxiliary_extraction_lines(
