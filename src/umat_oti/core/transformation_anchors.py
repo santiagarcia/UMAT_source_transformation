@@ -75,7 +75,7 @@ def build_transformation_anchors(config: dict[str, Any], source_text: str = "") 
 
     tangent_in_umat = _within_span(raw_tangent, umat_span)
     helper_regions: list[dict[str, Any]] = []
-    output_region: dict[str, Any] | None = None
+    output_regions: list[dict[str, Any]] = []
     shared_regions = [_with_role(region, "keep_real") for region in _within_span(raw_shared, umat_span)]
     for region in tangent_in_umat:
         direct_ddsdde = _region_directly_assigns_ddsdde(region, analysis)
@@ -88,8 +88,13 @@ def build_transformation_anchors(config: dict[str, Any], source_text: str = "") 
                 )
             )
             continue
-        if direct_ddsdde and (output_region is None or _as_int(region.get("end_line")) >= _as_int(output_region.get("end_line"))):
-            output_region = _with_role(region, "ddsdde_output_replace")
+        if direct_ddsdde:
+            # A consistent tangent may be written as several separate DDSDDE
+            # assignments (e.g. an elastic-like block built in DO loops followed
+            # by a correction term). Replace ALL of them, not just the last,
+            # otherwise the earlier assignments are left uncovered and block the
+            # transform.
+            output_regions.append(_with_role(region, "ddsdde_output_replace"))
             continue
         role = "tangent_helper_skip_only"
         if "validation" in str(region.get("classification", "")).lower():
@@ -109,8 +114,12 @@ def build_transformation_anchors(config: dict[str, Any], source_text: str = "") 
         )
     ]
 
+    # Primary output region (the last one) drives the GETIM insertion point.
+    output_region = max(output_regions, key=lambda r: _as_int(r.get("end_line"))) if output_regions else None
     if output_region is None:
         output_region = _infer_ddsdde_output_region(analysis, first_stress_start, last_stress_end, umat_span, source_line_count)
+        if output_region:
+            output_regions = [output_region]
 
     ddsdde_insert_after = _post_output_insert_line(source_lines, output_region) or last_stress_end
     real_output_line = _real_output_insert_after_line(source_lines, stress_regions, mappings)
@@ -177,6 +186,7 @@ def build_transformation_anchors(config: dict[str, Any], source_text: str = "") 
         "old_tangent": {
             "helper_regions": helper_regions,
             "output_region": output_region or {},
+            "output_regions": output_regions,
             "reason": "Explicit DDSDDE-region contract. Helper regions are skipped only when the role says skip_only; keep-real setup is preserved.",
         },
         "tangent_helper_regions_to_skip": helper_regions,
@@ -205,9 +215,12 @@ def merge_completed_anchors_into_config(config: dict[str, Any], source_text: str
     review = dict(_dict(updated.get("transformation_review")))
     review["stress_update_regions_to_transform"] = anchors.get("stress_update", {}).get("regions", [])
     old_tangent = []
-    output_region = anchors.get("old_tangent", {}).get("output_region", {})
-    if isinstance(output_region, dict) and output_region:
-        old_tangent.append(output_region)
+    output_regions = anchors.get("old_tangent", {}).get("output_regions") or []
+    old_tangent.extend([r for r in output_regions if isinstance(r, dict) and r])
+    if not old_tangent:
+        output_region = anchors.get("old_tangent", {}).get("output_region", {})
+        if isinstance(output_region, dict) and output_region:
+            old_tangent.append(output_region)
     old_tangent.extend(anchors.get("old_tangent", {}).get("helper_regions", []) or [])
     review["old_tangent_regions_to_replace"] = old_tangent
     review["tangent_helper_regions_to_skip"] = anchors.get("old_tangent", {}).get("helper_regions", [])

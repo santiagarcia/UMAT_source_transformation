@@ -329,9 +329,13 @@ def _regions_from_anchors(config: dict[str, Any]) -> dict[str, list[dict[str, An
     stress = _anchor_region_rows(_dict(anchors.get("stress_update")).get("regions", []), include_roles={"transform_with_oti"})
     old_tangent: list[dict[str, Any]] = []
     old = _dict(anchors.get("old_tangent"))
-    output_region = _dict(old.get("output_region"))
-    if output_region:
-        old_tangent.extend(_anchor_region_rows([output_region], include_roles={"ddsdde_output_replace"}))
+    output_regions = [r for r in (old.get("output_regions") or []) if isinstance(r, dict) and r]
+    if not output_regions:
+        single = _dict(old.get("output_region"))
+        if single:
+            output_regions = [single]
+    if output_regions:
+        old_tangent.extend(_anchor_region_rows(output_regions, include_roles={"ddsdde_output_replace"}))
     old_tangent.extend(
         _anchor_region_rows(
             old.get("helper_regions", []),
@@ -626,8 +630,12 @@ def _tangent_region_context_from_anchors(config: dict[str, Any], source_text: st
         include_roles={"tangent_helper_skip_only", "validation_only_ignore"},
     )
     output_region = _dict(old.get("output_region"))
-    context.output_regions = _anchor_region_rows([output_region], include_roles={"ddsdde_output_replace"}) if output_region else []
-    context.extraction_region = context.output_regions[0] if context.output_regions else None
+    output_regions = [r for r in (old.get("output_regions") or []) if isinstance(r, dict) and r]
+    if not output_regions and output_region:
+        output_regions = [output_region]
+    context.output_regions = _anchor_region_rows(output_regions, include_roles={"ddsdde_output_replace"}) if output_regions else []
+    # Insert the GETIM extraction after the last (largest end-line) output region.
+    context.extraction_region = max(context.output_regions, key=lambda r: _as_int(r.get("end_line"))) if context.output_regions else None
     real_output = _dict(anchors.get("real_output_extraction"))
     ddsdde = _dict(anchors.get("ddsdde_extraction"))
     context.real_output_insert_after_line = _as_int(real_output.get("insert_after_line"))
