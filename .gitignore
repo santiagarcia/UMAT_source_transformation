@@ -1,0 +1,8 @@
+# Python bytecode
+__pycache__/
+*.pyc
+# Fortran build artifacts
+*.mod
+*.o
+# Generated run outputs
+umat_oti_workspace/
