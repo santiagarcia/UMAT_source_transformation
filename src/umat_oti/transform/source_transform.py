@@ -1107,8 +1107,28 @@ def _transform_source_text(
             dirty_assignment_line, _ = _logical_assignment_line(lines, line_number, form)
             shadow_sync_dirty_names.update(_assigned_shadow_names(dirty_assignment_line or line, helper_call_sync_names))
             promoted_assignment_targets = _assigned_shadow_names(dirty_assignment_line or line, roles["promote"])
+            # Also rewrite an assignment to a genuine kept-real variable (one
+            # with no OTI shadow of its own, e.g. the output SPD) whose RHS reads
+            # promoted shadow variables: SPD = DEQPL*(SYIEL0+SYIELD)/TWO. The
+            # reads must become the OTI shadows wrapped in REAL(...), otherwise
+            # they reference the now-undefined original names. Deliberately
+            # narrow: skip comments, control flow, WRITE/READ/CALL, and any LHS
+            # that itself has a shadow (those keep their real value / shadow copy).
+            reads_promoted_reference = False
+            candidate = dirty_assignment_line or line
+            if replacement_names and not promoted_assignment_targets and not _is_commented(candidate):
+                assign = re.match(r"^\s*([A-Za-z_]\w*)\s*(?:\([^=]*\))?\s*=\s*(.+)$", candidate)
+                if (
+                    assign
+                    and assign.group(1).upper() not in replacement_names
+                    and not re.match(r"^\s*(?:IF|DO|ELSE|END|WRITE|READ|CALL|GO\s*TO|GOTO)\b", candidate, flags=re.IGNORECASE)
+                ):
+                    rhs = assign.group(2)
+                    reads_promoted_reference = any(
+                        re.search(rf"\b{re.escape(name)}\b", rhs, flags=re.IGNORECASE) for name in replacement_names
+                    )
             if (
-                promoted_assignment_targets
+                (promoted_assignment_targets or reads_promoted_reference)
                 and not re.match(r"^\s*CALL\b", line, flags=re.IGNORECASE)
                 and seed_insert_before_line
                 and line_number >= seed_insert_before_line

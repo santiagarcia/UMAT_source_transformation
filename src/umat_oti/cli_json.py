@@ -44,6 +44,7 @@ def run_config_transform(config_path: Path, out_dir: Path) -> tuple[dict[str, An
 
     out_dir.mkdir(parents=True, exist_ok=True)
     result = transform_umat_to_oti_from_config(source_text, config, out_dir, ntens)
+    combined = _write_combined_source(out_dir, result.transformed_source_path) if result.success else None
     summary.update(
         {
             "transform_success": result.success,
@@ -51,11 +52,44 @@ def run_config_transform(config_path: Path, out_dir: Path) -> tuple[dict[str, An
             "warnings": result.warnings,
             "report_path": str(result.report_path or ""),
             "transformed_source": str(result.transformed_source_path or ""),
+            "combined_source": str(combined or ""),
             "semantic_checks": result.report.get("semantic_checks", {}),
             "status_category": _classify_outcome(result),
         }
     )
     return summary, 0 if result.success else 1
+
+
+def _write_combined_source(out_dir: Path, transformed_source: Any) -> Path | None:
+    """Write one Abaqus-submittable file: the OTI support modules followed by the
+    transformed UMAT, all as free-form Fortran (the fixed-form UMAT is converted).
+
+    Submit it directly with `abaqus job=... user=<name>_oti_combined.f90`.
+    """
+    if not transformed_source:
+        return None
+    transformed_source = Path(transformed_source)
+    order_file = out_dir / "compile_order.txt"
+    if not order_file.is_file():
+        return None
+    from umat_oti.validation.job_builder import _fixed_form_to_free_form
+
+    chunks: list[str] = []
+    for name in (line.strip() for line in order_file.read_text(encoding="utf-8").splitlines()):
+        if not name:
+            continue
+        part = out_dir / name
+        if not part.is_file():
+            continue
+        text = part.read_text(encoding="utf-8", errors="replace")
+        if part.suffix.lower() in {".f", ".for", ".ftn"}:
+            text = _fixed_form_to_free_form(text)
+        chunks.append(f"! ===== {part.name} =====\n{text}\n")
+    if not chunks:
+        return None
+    combined = out_dir / f"{transformed_source.stem}_combined.f90"
+    combined.write_text("".join(chunks), encoding="utf-8")
+    return combined
 
 
 def _classify_outcome(result: Any) -> str:
