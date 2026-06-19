@@ -34,8 +34,8 @@ def generate_otilib_module(
     order: int = 1,
     support_dir: Path | None = None,
 ) -> OtilibModuleResult:
-    if order != 1:
-        raise OtilibGenerationError("OTILIB module generation unavailable: only first-order OTI is supported in this milestone.")
+    if order < 1:
+        raise OtilibGenerationError("OTILIB module generation unavailable: order must be a positive integer.")
     if ntens <= 0:
         raise OtilibGenerationError("OTILIB module generation unavailable: NTENS must be a positive integer.")
 
@@ -53,8 +53,8 @@ def generate_otilib_module(
     shutil.copyfile(master_path, generated_master)
     shutil.copyfile(real_utils_path, generated_real_utils)
 
-    module_name = f"otim{ntens}n1"
-    type_name = f"ONUMM{ntens}N1"
+    module_name = f"otim{ntens}n{order}"
+    type_name = f"ONUMM{ntens}N{order}"
     module_path = output_dir / f"{module_name}.f90"
     warnings: list[str] = []
 
@@ -74,7 +74,7 @@ def generate_otilib_module(
         raise OtilibGenerationError(f"OTILIB module generation unavailable: {exc}") from exc
 
     source = module_path.read_text(encoding="utf-8", errors="replace")
-    module_path.write_text(_post_fix_module(source, ntens), encoding="utf-8")
+    module_path.write_text(_post_fix_module(source, ntens, order), encoding="utf-8")
     return OtilibModuleResult(
         module_name=module_name,
         type_name=type_name,
@@ -164,29 +164,30 @@ def _install_pyoti_shim(template_dir: Path) -> dict[str, types.ModuleType]:
 
     import numpy as np
 
+    from umat_oti.oti import oti_directions as _dirs
+
     class DHelp:
+        """Arbitrary-order OTI direction algebra, backed by the canonical
+        nbases-independent enumeration in :mod:`umat_oti.oti.oti_directions`."""
+
         def get_ndir_total(self, nbases: int, order: int) -> int:
-            return sum(comb(nbases + k - 1, k) if k else 1 for k in range(order + 1))
+            return _dirs.ndir_total(nbases, order)
 
         def get_ndir_order(self, nbases: int, order: int) -> int:
-            if order == 0:
-                return 1
-            return comb(nbases + order - 1, order)
+            return _dirs.ndir_order(nbases, order)
 
         def get_fulldir(self, idx: int, order: int) -> Any:
             if order == 0:
                 return np.zeros(1, dtype=np.uint16)
-            if order == 1:
-                return np.array([idx + 1], dtype=np.uint16)
-            raise NotImplementedError("local pyoti shim only supports order=1")
+            return np.array(_dirs.fulldir(idx, order), dtype=np.uint16)
 
         def mult_dir(self, j: int, ordj: int, k: int, ordk: int) -> Any:
-            raise NotImplementedError("local pyoti shim only supports order=1")
+            combined = tuple(_dirs.fulldir(j, ordj)) + tuple(_dirs.fulldir(k, ordk))
+            total_order = ordj + ordk
+            return _dirs.dir_index(combined), total_order
 
         def get_deriv_factor(self, indx: int, order: int) -> float:
-            if order <= 1:
-                return 1.0
-            raise NotImplementedError("local pyoti shim only supports order=1")
+            return float(_dirs.deriv_factor(_dirs.fulldir(indx, order)))
 
     dhelp = DHelp()
 
@@ -232,20 +233,23 @@ _REAL_UTILS_USE_RE = re.compile(r"^([ \t]*)USE\s+real_utils\s*$", re.MULTILINE |
 _REAL_UTILS_ONLY = "PPRINT, det2x2, det3x3, det4x4, inv2x2, inv3x3, inv4x4"
 
 
-def _post_fix_module(source: str, ntens: int) -> str:
+def _post_fix_module(source: str, ntens: int, order: int = 1) -> str:
     source = _BACK_KW_RE.sub("", source)
     source = _MASTER_PARAMETERS_USE_RE.sub(lambda match: f"{match.group(1)}USE master_parameters, ONLY: DP", source, count=1)
     source = _REAL_UTILS_USE_RE.sub(lambda match: f"{match.group(1)}USE real_utils, ONLY: {_REAL_UTILS_ONLY}", source, count=1)
-    interface_block, body = _extra_overloads(ntens)
+    interface_block, body = _extra_overloads(ntens, order)
     source = _CONTAINS_RE.sub(lambda match: interface_block + match.group(0), source, count=1)
     source = _END_MODULE_RE.sub(lambda match: body + match.group(0), source, count=1)
     return source
 
 
-def _extra_overloads(ntens: int) -> tuple[str, str]:
-    type_name = f"ONUMM{ntens}N1"
-    abs_direction_lines = "\n      ".join(f"RES%E{i} = SGN * A%E{i}" for i in range(1, ntens + 1))
-    norm_terms = " + ".join(["A%R*A%R"] + [f"A%E{i}*A%E{i}" for i in range(1, ntens + 1)])
+def _extra_overloads(ntens: int, order: int = 1) -> tuple[str, str]:
+    from umat_oti.oti import oti_directions as _dirs
+
+    type_name = f"ONUMM{ntens}N{order}"
+    members = [d["name"] for d in _dirs.imaginary_directions(ntens, order)]
+    abs_direction_lines = "\n      ".join(f"RES%{m} = SGN * A%{m}" for m in members)
+    norm_terms = " + ".join(["A%R*A%R"] + [f"A%{m}*A%{m}" for m in members])
     interface_block = (
         "  INTERFACE ABS\n"
         f"    MODULE PROCEDURE {type_name}_ABS\n"

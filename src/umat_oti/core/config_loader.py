@@ -1534,8 +1534,9 @@ def _compact_transformation_settings(
         settings["ntens_warning"] = ""
     if "order" in otis and otis.get("order") not in (None, ""):
         order = _positive_int(otis.get("order"), "otis.order")
-        if order != 1:
-            raise ValueError("Compact configuration otis.order must be 1 in this milestone.")
+        # order == 1 -> material tangent DDSDDE only. order > 1 additionally
+        # computes the higher-order stress Jacobians (d^k STRESS/dDSTRAN...) and
+        # writes them to a side file at runtime; see _higher_order_jacobian_lines.
         settings["order"] = order
     return settings
 

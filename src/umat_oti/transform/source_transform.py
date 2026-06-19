@@ -930,6 +930,7 @@ def _transform_source_text(
 ) -> TransformRewrite:
     lines = source_text.splitlines()
     form = parsed.form
+    oti_order = int(_dict(config.get("transformation_settings")).get("order", 1) or 1)
     helper_output_surfaces = _helper_output_surfaces(config)
     header_end = _selected_header_end(parsed, selected_umat) or 1
     selected_routine_span = _selected_routine_span(parsed, selected_umat) or (1, len(lines))
@@ -1039,6 +1040,7 @@ def _transform_source_text(
                         **_synthetic_real_surface_variables(config),
                         **_synthetic_real_jacobian_targets(config),
                     },
+                    order=oti_order,
                 )
             )
         if line_number + 1 == seed_insert_before_line and not initialization_inserted:
@@ -1082,7 +1084,7 @@ def _transform_source_text(
                 if ddsdde_uses_getim and pure_seed_tangent_bridge_lines and not pure_seed_tangent_bridge_inserted:
                     output.extend(pure_seed_tangent_bridge_lines)
                     pure_seed_tangent_bridge_inserted = True
-                output.extend(preserved_ddsdde_output_lines or _ddsdde_extraction_lines(form, mappings, ntens))
+                output.extend(preserved_ddsdde_output_lines or _ddsdde_extraction_lines(form, mappings, ntens, oti_order, oti_directions))
                 tangent_extraction_inserted = True
                 extraction_insertion_region_id = str(extraction_region.get("region_id", "")) if extraction_region else "before RETURN"
             continue
@@ -1099,7 +1101,7 @@ def _transform_source_text(
                 if ddsdde_uses_getim and pure_seed_tangent_bridge_lines and not pure_seed_tangent_bridge_inserted:
                     output.extend(pure_seed_tangent_bridge_lines)
                     pure_seed_tangent_bridge_inserted = True
-                output.extend(preserved_ddsdde_output_lines or _ddsdde_extraction_lines(form, mappings, ntens))
+                output.extend(preserved_ddsdde_output_lines or _ddsdde_extraction_lines(form, mappings, ntens, oti_order, oti_directions))
                 tangent_extraction_inserted = True
                 extraction_insertion_region_id = str(extraction_region.get("region_id", "")) if extraction_region else "before RETURN"
             continue
@@ -1234,7 +1236,7 @@ def _transform_source_text(
             if ddsdde_uses_getim and pure_seed_tangent_bridge_lines and not pure_seed_tangent_bridge_inserted:
                 output.extend(pure_seed_tangent_bridge_lines)
                 pure_seed_tangent_bridge_inserted = True
-            output.extend(preserved_ddsdde_output_lines or _ddsdde_extraction_lines(form, mappings, ntens))
+            output.extend(preserved_ddsdde_output_lines or _ddsdde_extraction_lines(form, mappings, ntens, oti_order, oti_directions))
             tangent_extraction_inserted = True
             extraction_insertion_region_id = str(extraction_region.get("region_id", "")) if extraction_region else "before RETURN"
         if _is_return_line(line) and not real_extraction_inserted:
@@ -1249,7 +1251,7 @@ def _transform_source_text(
             if ddsdde_uses_getim and pure_seed_tangent_bridge_lines and not pure_seed_tangent_bridge_inserted:
                 output[len(output) - 1:len(output) - 1] = pure_seed_tangent_bridge_lines
                 pure_seed_tangent_bridge_inserted = True
-            output[len(output) - 1:len(output) - 1] = preserved_ddsdde_output_lines or _ddsdde_extraction_lines(form, mappings, ntens)
+            output[len(output) - 1:len(output) - 1] = preserved_ddsdde_output_lines or _ddsdde_extraction_lines(form, mappings, ntens, oti_order, oti_directions)
             tangent_extraction_inserted = True
             extraction_insertion_region_id = "before RETURN"
         if line_number >= selected_routine_span[1]:
@@ -1555,9 +1557,16 @@ def _declaration_lines(
     shadow_variables: list[str],
     variable_shapes: dict[str, str],
     synthetic_real_variables: dict[str, str] | None = None,
+    order: int = 1,
 ) -> list[str]:
     lines = [_stmt(form, "INTEGER :: OTI_I, OTI_J, OTI_HI, OTI_HJ, OTI_HK")]
     lines.append(_stmt(form, f"TYPE({type_name}) :: OTI_HX, OTI_HY, OTI_HTR"))
+    if order and order > 1:
+        # Scratch for the higher-order Jacobian side file (see
+        # _higher_order_jacobian_lines). GETOUTDIR gives Abaqus's output directory
+        # so the file lands there regardless of the solver's working directory.
+        lines.append(_stmt(form, "INTEGER :: IOTIHJ, IOTILN"))
+        lines.append(_stmt(form, "CHARACTER(256) :: OTI_OUTDIR"))
     for name, shape in sorted((synthetic_real_variables or {}).items()):
         suffix = f"({shape})" if shape else ""
         lines.append(_stmt(form, f"REAL(8) :: {name}{suffix}"))
@@ -1789,11 +1798,13 @@ def _explicit_ddsdde_assignment_rows(config: dict[str, Any], extraction_region: 
     return sorted(rows, key=lambda row: min((_as_int(value) for value in (row.get("line_numbers") or []) if _as_int(value)), default=0))
 
 
-def _ddsdde_extraction_lines(form: str, mappings: dict[str, str], ntens: int) -> list[str]:
+def _ddsdde_extraction_lines(
+    form: str, mappings: dict[str, str], ntens: int, order: int = 1, nbases: int | None = None
+) -> list[str]:
     stress = mappings.get("stress", "STRESS")
     ddsdde = mappings.get("ddsdde", "DDSDDE")
     if form == "fixed":
-        return [
+        lines = [
             _comment_line(form, "OTIS DDSDDE extraction: DDSDDE(i,j) = d STRESS(i) / d DSTRAN(j)"),
             "      DO OTI_I = 1, NTENS",
             "         DO OTI_J = 1, NTENS",
@@ -1802,14 +1813,67 @@ def _ddsdde_extraction_lines(form: str, mappings: dict[str, str], ntens: int) ->
             "         END DO",
             "      END DO",
         ]
-    return [
-        _comment_line(form, "OTIS DDSDDE extraction: DDSDDE(i,j) = d STRESS(i) / d DSTRAN(j)"),
-        _stmt(form, "DO OTI_I = 1, NTENS"),
-        _stmt(form, "   DO OTI_J = 1, NTENS"),
-        _stmt(form, f"      {ddsdde}(OTI_I, OTI_J) = GETIM({stress}_OTI(OTI_I), OTI_J)"),
-        _stmt(form, "   END DO"),
-        _stmt(form, "END DO"),
-    ]
+    else:
+        lines = [
+            _comment_line(form, "OTIS DDSDDE extraction: DDSDDE(i,j) = d STRESS(i) / d DSTRAN(j)"),
+            _stmt(form, "DO OTI_I = 1, NTENS"),
+            _stmt(form, "   DO OTI_J = 1, NTENS"),
+            _stmt(form, f"      {ddsdde}(OTI_I, OTI_J) = GETIM({stress}_OTI(OTI_I), OTI_J)"),
+            _stmt(form, "   END DO"),
+            _stmt(form, "END DO"),
+        ]
+    if order and order > 1:
+        lines.extend(_higher_order_jacobian_lines(form, mappings, ntens, order, nbases or ntens))
+    return lines
+
+
+def _higher_order_jacobian_lines(
+    form: str, mappings: dict[str, str], ntens: int, order: int, nbases: int
+) -> list[str]:
+    """Emit code that, after the first-order DDSDDE fill, writes the higher-order
+    stress Jacobians (d^k STRESS(i)/dDSTRAN... for k=2..order) to a side file at
+    Abaqus runtime. The UMAT interface has no slot to return these, so they are
+    written to 'oti_hjac.dat' (one labelled value per stress component per mixed
+    strain direction; rows tagged with NOEL/NPT/KSTEP/KINC). Each emitted record
+    is: stress_component, order, base_indices..., derivative_value.
+
+    The OTI imaginary coefficient stores the Taylor term, so the true partial
+    derivative is recovered by multiplying by the repeated-index factorial
+    (e.g. d2/dDSTRAN_i^2 needs x2, mixed d2/dDSTRAN_i dDSTRAN_j needs x1)."""
+    from itertools import combinations_with_replacement
+    from umat_oti.oti import oti_directions as _dirs
+
+    stress = mappings.get("stress", "STRESS")
+    # NEWUNIT picks a guaranteed-free unit (dodging Abaqus's reserved units) and
+    # GETOUTDIR gives Abaqus's output directory, so the file lands there regardless
+    # of the solver's working directory. IOTIHJ/IOTILN/OTI_OUTDIR are declared in
+    # _declaration_lines for order > 1.
+    unit = "IOTIHJ"
+    fname = "oti_hjac.dat"
+    lines = [_comment_line(form, f"OTIS higher-order stress Jacobians (orders 2..{order}) -> {fname}")]
+    lines.append(_stmt(form, "CALL GETOUTDIR(OTI_OUTDIR, IOTILN)"))
+    # The OPEN spans two lines (path concatenation is long); emit a continuation
+    # appropriate to the source form so it stays valid in fixed-form's 72 columns.
+    if form == "fixed":
+        lines.append(f"      OPEN(NEWUNIT={unit},FILE=OTI_OUTDIR(1:IOTILN)//")
+        lines.append(f"     1     '/{fname}',POSITION='APPEND')")
+    else:
+        lines.append(_stmt(form, f"OPEN(NEWUNIT={unit},FILE=OTI_OUTDIR(1:IOTILN)// &"))
+        lines.append(_stmt(form, f"     '/{fname}',POSITION='APPEND')"))
+    lines.append(_stmt(form, f"WRITE({unit},*)'#',NOEL,NPT,KSTEP,KINC"))
+    lines.append(_stmt(form, "DO OTI_I = 1, NTENS"))
+    for k in range(2, order + 1):
+        for multiset in combinations_with_replacement(range(1, ntens + 1), k):
+            flat = _dirs.flat_index(nbases, k, _dirs.dir_index(multiset))
+            factor = _dirs.deriv_factor(multiset)
+            value = f"GETIM({stress}_OTI(OTI_I),{flat})"
+            if factor != 1:
+                value = f"{value}*{factor}.0D0"
+            bases = ",".join(str(b) for b in multiset)
+            lines.append(_stmt(form, f"   WRITE({unit},*)OTI_I,{k},{bases},{value}"))
+    lines.append(_stmt(form, "END DO"))
+    lines.append(_stmt(form, f"CLOSE({unit})"))
+    return lines
 
 
 def _replace_role_references(line: str, replacement_names: dict[str, str]) -> str:
